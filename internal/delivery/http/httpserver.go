@@ -1,12 +1,13 @@
 package httpserver
 
 import (
-	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"role-helper/internal/delivery/http/character"
 	"role-helper/internal/repository"
 	"role-helper/internal/usecase"
+
+	"github.com/gorilla/mux"
 )
 
 type HTTPServer struct {

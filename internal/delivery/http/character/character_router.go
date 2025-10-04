@@ -1,8 +1,9 @@
 package character
 
 import (
-	"github.com/gorilla/mux"
 	"role-helper/internal/models"
+
+	"github.com/gorilla/mux"
 )
 
 type CharacterRouter struct {
