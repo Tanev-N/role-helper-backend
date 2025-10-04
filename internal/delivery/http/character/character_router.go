@@ -17,9 +17,9 @@ func NewCharacterRouter(cs models.CharacterService) *CharacterRouter {
 func (cr *CharacterRouter) SetupCharacterRoutes(mux *mux.Router) {
 	charactersRouter := mux.PathPrefix("/characters").Subrouter()
 
-	charactersRouter.HandleFunc("", cr.CreateCharacter).Methods("POST")
+	charactersRouter.HandleFunc("", cr.CreateCharacter).Methods("POST", "OPTIONS")
 	charactersRouter.HandleFunc("", cr.GetCharacters).Methods("GET")
 	charactersRouter.HandleFunc("/{id}", cr.GetCharacter).Methods("GET")
-	charactersRouter.HandleFunc("/{id}", cr.UpdateCharacter).Methods("PUT")
-	charactersRouter.HandleFunc("/{id}", cr.DeleteCharacter).Methods("DELETE")
+	charactersRouter.HandleFunc("/{id}", cr.UpdateCharacter).Methods("PUT", "OPTIONS")
+	charactersRouter.HandleFunc("/{id}", cr.DeleteCharacter).Methods("DELETE", "OPTIONS")
 }
