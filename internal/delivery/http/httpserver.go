@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"role-helper/internal/delivery/http/character"
+	"role-helper/internal/middleware"
 	"role-helper/internal/repository"
 	"role-helper/internal/usecase"
 
@@ -39,6 +40,8 @@ func (s *HTTPServer) setupRoutes() *mux.Router {
 
 	router := mux.NewRouter()
 	router = router.PathPrefix("/").Subrouter()
+
+	router.Use(middleware.CORS)
 
 	characterRout := character.NewCharacterRouter(cu)
 	characterRout.SetupCharacterRoutes(router)
