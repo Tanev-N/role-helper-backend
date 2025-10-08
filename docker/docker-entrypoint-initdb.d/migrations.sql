@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS characters (
+    id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR(255) NOT NULL,
+    race VARCHAR(100),
+    class VARCHAR(100),
+    level INTEGER DEFAULT 0,
+    strength INTEGER DEFAULT 0,
+    dexterity INTEGER DEFAULT 0,
+    constitution INTEGER DEFAULT 0,
+    intelligence INTEGER DEFAULT 0,
+    wisdom INTEGER DEFAULT 0,
+    charisma INTEGER DEFAULT 0,
+    photo VARCHAR(100)
+);

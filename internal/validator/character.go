@@ -1,13 +1,9 @@
 package validator
 
 import (
-	"errors"
 	"fmt"
+	"role-helper/internal/models"
 	"strings"
-)
-
-var (
-	ErrCharacterNotFound = errors.New("Персонаж не найден")
 )
 
 const (
@@ -25,21 +21,7 @@ var ValidClasses = []string{
 	"Воин", "Маг", "Плут", "Жрец", "Следопыт", "Паладин", "Варвар", "Бард", "Друид", "Монах", "Чародей", "Колдун",
 }
 
-type Character struct {
-	Name         string `json:"name"`
-	Race         string `json:"race"`
-	Class        string `json:"class"`
-	Level        int    `json:"level"`
-	Strength     int    `json:"strength"`
-	Dexterity    int    `json:"dexterity"`
-	Constitution int    `json:"constitution"`
-	Intelligence int    `json:"intelligence"`
-	Wisdom       int    `json:"wisdom"`
-	Charisma     int    `json:"charisma"`
-	Photo        string `json:"photo"`
-}
-
-func ValidateCharacter(c Character) error {
+func ValidateCharacter(c models.Character) error {
 	if strings.TrimSpace(c.Name) == "" {
 		return fmt.Errorf("имя не может быть пустым")
 	}

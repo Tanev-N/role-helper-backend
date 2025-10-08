@@ -14,7 +14,7 @@ func NewCharacterUsecase(repo models.CharacterRepository) models.CharacterServic
 }
 
 func (c *CharacterUsecase) Create(createReq *models.Character) (*models.Character, error) {
-	characterForValidation := validator.Character{
+	characterForValidation := models.Character{
 		Name:         createReq.Name,
 		Race:         createReq.Race,
 		Class:        createReq.Class,
@@ -44,7 +44,7 @@ func (c *CharacterUsecase) FindByID(id string) (*models.Character, error) {
 		return nil, err
 	}
 	if character == nil {
-		return nil, validator.ErrCharacterNotFound
+		return nil, models.ErrCharacterNotFound
 	}
 	return character, nil
 }
@@ -55,10 +55,10 @@ func (c *CharacterUsecase) Update(id string, update *models.Character) (*models.
 		return nil, err
 	}
 	if character == nil {
-		return nil, validator.ErrCharacterNotFound
+		return nil, models.ErrCharacterNotFound
 	}
 
-	characterForValidation := validator.Character{
+	characterForValidation := models.Character{
 		Name:         update.Name,
 		Race:         update.Race,
 		Class:        update.Class,
@@ -85,7 +85,7 @@ func (c *CharacterUsecase) Delete(id string) error {
 		return err
 	}
 	if character == nil {
-		return validator.ErrCharacterNotFound
+		return models.ErrCharacterNotFound
 	}
 	return c.repo.Delete(id)
 }

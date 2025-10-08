@@ -2,12 +2,10 @@ package character
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"role-helper/internal/models"
-	"role-helper/internal/validator"
-
-	"github.com/gorilla/mux"
 )
 
 func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Request) {
@@ -55,7 +53,7 @@ func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) 
 
 	character, err := cr.CharacterUsecase.FindByID(id)
 	if err != nil {
-		if err == validator.ErrCharacterNotFound {
+		if err == models.ErrCharacterNotFound {
 			writeErrorResponse(w, http.StatusNotFound, err, "Персонаж не найден")
 			return
 		}
@@ -81,7 +79,7 @@ func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Reques
 
 	updatedCharacter, err := cr.CharacterUsecase.Update(id, &updateCharacter)
 	if err != nil {
-		if err == validator.ErrCharacterNotFound {
+		if err == models.ErrCharacterNotFound {
 			writeErrorResponse(w, http.StatusNotFound, err, "Персонаж не найден")
 			return
 		}
@@ -105,7 +103,7 @@ func (cr *CharacterRouter) DeleteCharacter(w http.ResponseWriter, r *http.Reques
 
 	err := cr.CharacterUsecase.Delete(id)
 	if err != nil {
-		if err == validator.ErrCharacterNotFound {
+		if err == models.ErrCharacterNotFound {
 			writeErrorResponse(w, http.StatusNotFound, err, "Персонаж не найден")
 			return
 		}

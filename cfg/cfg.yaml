@@ -1,0 +1,20 @@
+httpserver:
+  ip: localhost
+  port: 8080
+  allowed_ips_by_cors:
+    - http://localhost
+
+postgres:
+  ip: localhost
+  port: 5432
+  dbname: test
+  user: test
+  password: test
+
+redis:
+  ip: localhost
+  port: 6379
+  dbnum: 0
+  user: test
+  password: test
+

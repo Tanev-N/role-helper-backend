@@ -1,7 +1,9 @@
 package models
 
+import "errors"
+
 type Character struct {
-	ID           string `json:"id"`
+	ID           int    `json:"id"`
 	Name         string `json:"name"`
 	Race         string `json:"race"`
 	Class        string `json:"class"`
@@ -16,7 +18,7 @@ type Character struct {
 }
 
 type CharacterShort struct {
-	ID    string `json:"id"`
+	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Photo string `json:"photo"`
 }
@@ -36,3 +38,7 @@ type CharacterService interface {
 	Update(id string, update *Character) (*Character, error)
 	Delete(id string) error
 }
+
+var (
+	ErrCharacterNotFound = errors.New("character not found")
+)
