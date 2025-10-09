@@ -1,6 +1,6 @@
 httpserver:
   ip: localhost
-  port: 8080
+  port: 8081
   allowed_ips_by_cors:
     - http://localhost
 
