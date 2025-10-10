@@ -45,7 +45,7 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 	uu := usecase.NewUserUsecase(ur, client)
 
 	router := mux.NewRouter()
-	router = router.PathPrefix("/").Subrouter()
+	router = router.PathPrefix("/api").Subrouter()
 
 	router.Use(middleware.CORS)
 	router.Use(middleware.Auth(uu))

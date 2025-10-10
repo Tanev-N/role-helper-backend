@@ -1,0 +1,318 @@
+openapi: 3.0.3
+info:
+  title: DnD Characters API
+  version: 1.0.0
+  description: API для управления персонажами Dungeons & Dragons
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: characters
+    description: Работа с персонажами DnD
+  - name: auth
+    description: Аутентификация и регистрация пользователей
+
+paths:
+  /api/characters:
+    post:
+      tags: [characters]
+      summary: Создание нового персонажа
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterCreate"
+      responses:
+        "201":
+          description: Персонаж успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+    get:
+      tags: [characters]
+      summary: Получение списка всех персонажей
+      responses:
+        "200":
+          description: Список персонажей
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CharacterShort"
+
+  /api/characters/{id}:
+    get:
+      tags: [characters]
+      summary: Получение характеристик персонажа по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Характеристики персонажа
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+        "404":
+          description: Персонаж не найден
+
+    put:
+      tags: [characters]
+      summary: Обновление характеристик персонажа
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CharacterUpdate"
+      responses:
+        "200":
+          description: Персонаж обновлён
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Character"
+        "404":
+          description: Персонаж не найден
+
+    delete:
+      tags: [characters]
+      summary: Удаление персонажа по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Персонаж удалён
+        "404":
+          description: Персонаж не найден
+
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: Регистрация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+      responses:
+        "201":
+          description: Пользователь зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Вход пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserLogin"
+      responses:
+        "200":
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: Выход (удаление токена)
+      responses:
+        "204":
+          description: Пользователь вышел
+
+components:
+  schemas:
+    Character:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        name:
+          type: string
+          example: "Арагорн"
+        race:
+          type: string
+          example: "Human"
+        class:
+          type: string
+          example: "Monk"
+        level:
+          type: integer
+          example: 6
+        strength:
+          type: integer
+          example: 15
+        dexterity:
+          type: integer
+          example: 16
+        constitution:
+          type: integer
+          example: 14
+        intelligence:
+          type: integer
+          example: 12
+        wisdom:
+          type: integer
+          example: 17
+        charisma:
+          type: integer
+          example: 10
+        photo:
+          type: string
+          example: "https://example.com/aragorn.png"
+
+    CharacterCreate:
+      type: object
+      required:
+        [
+          name,
+          race,
+          class,
+          level,
+          strength,
+          dexterity,
+          constitution,
+          intelligence,
+          wisdom,
+          charisma,
+        ]
+      properties:
+        name:
+          type: string
+        race:
+          type: string
+        class:
+          type: string
+        level:
+          type: integer
+        strength:
+          type: integer
+        dexterity:
+          type: integer
+        constitution:
+          type: integer
+        intelligence:
+          type: integer
+        wisdom:
+          type: integer
+        charisma:
+          type: integer
+        photo:
+          type: string
+
+    CharacterUpdate:
+      type: object
+      description: Поля, которые можно обновить (любая характеристика)
+      properties:
+        name:
+          type: string
+        race:
+          type: string
+        class:
+          type: string
+        level:
+          type: integer
+        strength:
+          type: integer
+        dexterity:
+          type: integer
+        constitution:
+          type: integer
+        intelligence:
+          type: integer
+        wisdom:
+          type: integer
+        charisma:
+          type: integer
+        photo:
+          type: string
+
+    CharacterShort:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        photo:
+          type: string
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        username:
+          type: string
+          example: "e2e_user"
+        avatar_url:
+          type: string
+          example: "https://example.com/avatar.png"
+
+    UserRegister:
+      type: object
+      required:
+        - username
+        - password
+        - repassword
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        repassword:
+          type: string
+
+    UserLogin:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "description of the error"
+
