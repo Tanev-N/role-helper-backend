@@ -83,7 +83,6 @@ func (ur *UserRouter) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	writeSuccessResponse(w, http.StatusOK, map[string]interface{}{
 		"user":  respUser,
-		"token": token,
 	})
 }
 
