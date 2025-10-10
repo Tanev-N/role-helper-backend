@@ -22,7 +22,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no deployer@109.120.182.198 "
             echo '=== Starting Deployment ==='
-            cd /app
+            cd app
 
             if [ ! -d .git ]; then
               echo 'Cloning repository...'
