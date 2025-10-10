@@ -27,7 +27,7 @@ type UserRepository interface {
 }
 
 type UserService interface {
-	Register(req *UserRegisterRequest) (*User, error)
+	Register(req *UserRegisterRequest) (*User, string, error)
 	Login(req *UserLoginRequest) (*User, string, error)
 	Logout(token string) error
 	ValidateToken(token string) (*User, error)

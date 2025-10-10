@@ -31,7 +31,7 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, err := ur.UserUsecase.Register(&req)
+	user, token, err := ur.UserUsecase.Register(&req)
 	if err != nil {
 		if err == models.ErrUserAlreadyExists {
 			writeErrorResponse(w, http.StatusConflict, err, "Пользователь уже существует")
@@ -41,6 +41,15 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	http.SetCookie(w, &http.Cookie{
+		Name:     "auth_token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Path:     "/",
+		SameSite: http.SameSiteLaxMode,
+	})
+
 	respUser := map[string]interface{}{
 		"id":         user.ID,
 		"username":   user.Username,
@@ -48,7 +57,6 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 	}
 	writeSuccessResponse(w, http.StatusCreated, respUser)
 }
-
 func (ur *UserRouter) Login(w http.ResponseWriter, r *http.Request) {
 	var req models.UserLoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -82,7 +90,7 @@ func (ur *UserRouter) Login(w http.ResponseWriter, r *http.Request) {
 		"avatar_url": user.AvatarURL,
 	}
 	writeSuccessResponse(w, http.StatusOK, map[string]interface{}{
-		"user":  respUser,
+		"user": respUser,
 	})
 }
 
