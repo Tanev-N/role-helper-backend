@@ -1,0 +1,40 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy application
+        run: |
+          ssh -o StrictHostKeyChecking=no deployer@109.120.182.198 "
+            echo '=== Starting Deployment ==='
+            cd /home/deployer/app
+
+            if [ ! -d .git ]; then
+              echo 'Cloning repository...'
+              git clone https://github.com/${{ github.repository }}.git .
+            else
+              echo 'Pulling latest changes...'
+              git pull origin main
+            fi
+          
+            echo '=== Starting Docker Containers ==='
+            docker-compose down || true
+            docker-compose up --build -d
+          
+            echo '=== Deployment Completed! ==='
+            docker ps
+          "
