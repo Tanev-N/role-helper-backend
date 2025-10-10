@@ -6,13 +6,6 @@ services:
     container_name: go-app
     ports:
       - "8080:8080"
-    env_file:
-      - .env
-    environment:
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
     depends_on:
       - postgres
       - redis
@@ -20,16 +13,17 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: postgres
-    env_file:
-      - .env
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=role-helper
+      - POSTGRES_PASSWORD=role-helper
+      - POSTGRES_DB=role-helper
     volumes:
       - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
 
-volumes:
-  postgres_data:
+  redis:
+      image: redis:latest
+      container_name: redis
+      ports:
+        - "6379:6379"

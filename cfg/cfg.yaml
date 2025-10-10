@@ -5,14 +5,14 @@ httpserver:
     - http://localhost
 
 postgres:
-  ip: localhost
+  ip: postgres
   port: 5432
   dbname: test
   user: test
   password: test
 
 redis:
-  ip: localhost
+  ip: redis
   port: 6379
   dbnum: 0
   user: test
