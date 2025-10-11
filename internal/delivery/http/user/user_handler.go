@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"role-helper/internal/models"
+	"role-helper/internal/usecase"
 	"role-helper/internal/validator"
 	"time"
 )
@@ -13,7 +14,7 @@ type UserRouter struct {
 	UserUsecase models.UserService
 }
 
-func NewUserRouter(userUsecase models.UserService) *UserRouter {
+func NewUserRouter(userUsecase *usecase.UserUsecase) *UserRouter {
 	return &UserRouter{
 		UserUsecase: userUsecase,
 	}

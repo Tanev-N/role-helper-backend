@@ -31,26 +31,26 @@ func NewUserUsecase(userRepo models.UserRepository, redisClient *redis.Client) *
 	}
 }
 
-func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, error) {
+func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, string, error) {
 	if req.Password != req.RePassword {
-		return nil, models.ErrPasswordsDontMatch
+		return nil, "", models.ErrPasswordsDontMatch
 	}
 	if len(req.Username) < 4 {
-		return nil, models.ErrInvalidCredentials
+		return nil, "", models.ErrInvalidCredentials
 	}
 
 	if len(req.Password) < 6 {
-		return nil, models.ErrInvalidCredentials
+		return nil, "", models.ErrInvalidCredentials
 	}
 
 	_, err := uu.userRepo.FindByUsername(req.Username)
 	if err == nil {
-		return nil, models.ErrUserAlreadyExists
+		return nil, "", models.ErrUserAlreadyExists
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	user := &models.User{
@@ -59,7 +59,17 @@ func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, 
 		AvatarURL:    "",
 	}
 
-	return uu.userRepo.Create(user)
+	createdUser, err := uu.userRepo.Create(user)
+	if err != nil {
+		return nil, "", err
+	}
+
+	token, err := uu.generateToken()
+	if err != nil {
+		return nil, "", err
+	}
+
+	return createdUser, token, nil
 }
 
 func (uu *UserUsecase) Login(req *models.UserLoginRequest) (*models.User, string, error) {
