@@ -13,29 +13,26 @@ const (
 	MaxLevel        = 20
 )
 
-var ValidRaces = []string{
-	"Человек", "Эльф", "Дварф", "Халфлинг", "Гном", "Полуорк", "Полуэльф", "Тифлинг", "Драконорожденный",
-}
-
-var ValidClasses = []string{
-	"Воин", "Маг", "Плут", "Жрец", "Следопыт", "Паладин", "Варвар", "Бард", "Друид", "Монах", "Чародей", "Колдун",
-}
 
 func ValidateCharacter(c models.Character) error {
 	if strings.TrimSpace(c.Name) == "" {
 		return fmt.Errorf("имя не может быть пустым")
 	}
 
-	if !isValidRace(c.Race) {
-		return fmt.Errorf("неверная раса: %s. Доступные расы: %s", c.Race, strings.Join(ValidRaces, ", "))
+	if strings.TrimSpace(c.Race) == "" {
+		return fmt.Errorf("раса не может быть пустой")
 	}
 
-	if !isValidClass(c.Class) {
-		return fmt.Errorf("неверный класс: %s. Доступные классы: %s", c.Class, strings.Join(ValidClasses, ", "))
+	if strings.TrimSpace(c.Class) == "" {
+		return fmt.Errorf("класс не может быть пустым")
 	}
 
 	if c.Level < MinLevel || c.Level > MaxLevel {
 		return fmt.Errorf("неверный уровень: %d. Уровень должен быть от %d до %d", c.Level, MinLevel, MaxLevel)
+	}
+
+	if c.Experience < 0 {
+		return fmt.Errorf("опыт не может быть отрицательным")
 	}
 
 	if err := validateAbilityScore("Сила", c.Strength); err != nil {
@@ -57,25 +54,23 @@ func ValidateCharacter(c models.Character) error {
 		return err
 	}
 
+	if c.ArmorClass < 0 {
+		return fmt.Errorf("класс брони не может быть отрицательным")
+	}
+	if c.Speed < 0 {
+		return fmt.Errorf("скорость не может быть отрицательной")
+	}
+	if c.HitPoints < 0 {
+		return fmt.Errorf("хиты не могут быть отрицательными")
+	}
+	if c.MaxHitPoints < 0 {
+		return fmt.Errorf("максимальные хиты не могут быть отрицательными")
+	}
+	if c.TempHitPoints < 0 {
+		return fmt.Errorf("временные хиты не могут быть отрицательными")
+	}
+
 	return nil
-}
-
-func isValidRace(race string) bool {
-	for _, validRace := range ValidRaces {
-		if strings.EqualFold(race, validRace) {
-			return true
-		}
-	}
-	return false
-}
-
-func isValidClass(class string) bool {
-	for _, validClass := range ValidClasses {
-		if strings.EqualFold(class, validClass) {
-			return true
-		}
-	}
-	return false
 }
 
 func validateAbilityScore(name string, score int) error {

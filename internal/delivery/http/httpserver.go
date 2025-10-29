@@ -38,7 +38,7 @@ func (s *HTTPServer) Start(config *cfg.Config, db *sql.DB, client *redis.Client)
 }
 
 func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
-	cr := repository.NewCharacterDB(db)
+	cr := repository.NewCharacterRepository(db)
 	cu := usecase.NewCharacterUsecase(cr)
 
 	ur := repository.NewUserRepository(db)

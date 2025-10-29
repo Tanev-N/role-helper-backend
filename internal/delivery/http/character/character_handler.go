@@ -3,14 +3,11 @@ package character
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
 	"role-helper/internal/models"
 )
 
 func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Создание нового персонажа")
-
 	var character models.Character
 
 	if err := json.NewDecoder(r.Body).Decode(&character); err != nil {
@@ -28,28 +25,22 @@ func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("Персонаж успешно создан: %s (ID: %s)", createdCharacter.Name, createdCharacter.ID)
 	writeSuccessResponse(w, http.StatusCreated, createdCharacter)
 }
 
 func (cr *CharacterRouter) GetCharacters(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Получение всех персонажей")
-
 	characters, err := cr.CharacterUsecase.GetAll()
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось получить список персонажей")
 		return
 	}
 
-	log.Printf("Получено %d персонажей", len(characters))
 	writeSuccessResponse(w, http.StatusOK, characters)
 }
 
 func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-
-	log.Printf("Получение персонажа по ID: %s", id)
 
 	character, err := cr.CharacterUsecase.FindByID(id)
 	if err != nil {
@@ -61,15 +52,12 @@ func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	log.Printf("Персонаж получен: %s", character.Name)
 	writeSuccessResponse(w, http.StatusOK, character)
 }
 
 func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-
-	log.Printf("Обновление персонажа ID: %s", id)
 
 	var updateCharacter models.Character
 	if err := json.NewDecoder(r.Body).Decode(&updateCharacter); err != nil {
@@ -91,15 +79,12 @@ func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("Персонаж успешно обновлен: %s", updatedCharacter.Name)
 	writeSuccessResponse(w, http.StatusOK, updatedCharacter)
 }
 
 func (cr *CharacterRouter) DeleteCharacter(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]
-
-	log.Printf("Удаление персонажа ID: %s", id)
 
 	err := cr.CharacterUsecase.Delete(id)
 	if err != nil {
@@ -111,6 +96,5 @@ func (cr *CharacterRouter) DeleteCharacter(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	log.Printf("Персонаж успешно удален: %s", id)
 	w.WriteHeader(http.StatusNoContent)
 }
