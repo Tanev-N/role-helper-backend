@@ -118,7 +118,7 @@ func (r *GameRepository) AddPlayerToGame(player *models.GamePlayer) error {
 func (r *GameRepository) FinishSession(id int, summary string) error {
 	query := `
 		UPDATE sessions 
-		SET summary = $1 
+		SET summary = $1, finished_at = NOW() 
 		WHERE id = $2
 	`
 

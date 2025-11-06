@@ -34,11 +34,6 @@ type EnterSession struct {
 	SessionKey  string `json:"session_key"`
 }
 
-type SessionWithSummaries struct {
-	Session   *Session  `json:"session"`
-	Summaries []Session `json:"summaries"`
-}
-
 type GameRepository interface {
 	CreateGame(game *Game) (*Game, error)
 	CreateSession(session *Session) (*Session, error)
