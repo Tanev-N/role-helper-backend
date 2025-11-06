@@ -94,9 +94,25 @@ CREATE TABLE IF NOT EXISTS character_spells (
     description TEXT
 );
 
--- Создание индексов для оптимизации запросов
-CREATE INDEX IF NOT EXISTS idx_characters_name ON characters(name);
-CREATE INDEX IF NOT EXISTS idx_characters_player_name ON characters(player_name);
-CREATE INDEX IF NOT EXISTS idx_character_skills_character_id ON character_skills(character_id);
-CREATE INDEX IF NOT EXISTS idx_character_equipment_character_id ON character_equipment(character_id);
-CREATE INDEX IF NOT EXISTS idx_character_spells_character_id ON character_spells(character_id);
+CREATE TABLE IF NOT EXISTS games (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    master_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+);
+
+CREATE TABLE sessions (
+    id SERIAL PRIMARY KEY,
+    game_id SERIAL NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    session_key VARCHAR(12) UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    finished_at TIMESTAMPTZ,
+    summary TEXT
+);
+
+CREATE TABLE game_players (
+    id SERIAL PRIMARY KEY,
+    game_id SERIAL NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    user_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id VARCHAR(50) NOT NULL REFERENCES characters(id),
+    UNIQUE(game_id, user_id)
+);
