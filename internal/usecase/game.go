@@ -12,34 +12,19 @@ type GameUseCase struct {
 	character models.CharacterRepository
 }
 
-func NewGameUseCase(game *repository.GameRepository, user *repository.UserRepository) models.GameService {
-	return &GameUseCase{game: game, user: user}
+func NewGameUseCase(game *repository.GameRepository, user *repository.UserRepository, char models.CharacterRepository) models.GameService {
+	return &GameUseCase{game: game, user: user, character: char}
 }
 
 func (uc *GameUseCase) CreateGame(gameReq *models.Game) (*models.Game, error) {
 	if gameReq.Name == "" {
 		return nil, errors.New("game name cannot be empty")
 	}
-	user, err := uc.user.FindByID(gameReq.MasterID)
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, errors.New("invalid master id")
-	}
 	return uc.game.CreateGame(gameReq)
 }
 
 func (uc *GameUseCase) CreateSession(session *models.Session) (*models.Session, []models.Session, error) {
-	game, err := uc.game.GetGameByID(session.GameID)
-	if err != nil {
-		return nil, nil, err
-	}
-	if game == nil {
-		return nil, nil, errors.New("game not found")
-	}
-
-	session, err = uc.game.CreateSession(session)
+	session, err := uc.game.CreateSession(session)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -73,6 +58,10 @@ func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*mod
 		return nil, errors.New("invalid character id")
 	}
 
+	if character.PlayerName != user.Username {
+		return nil, errors.New("invalid user id for character")
+	}
+
 	session, err := uc.game.GetSessionByKey(key)
 	if err != nil {
 		return nil, err
@@ -93,6 +82,29 @@ func (uc *GameUseCase) FinishSession(id int, summary string) error {
 	if summary == "" {
 		return errors.New("summary cannot be empty")
 	}
+	session, err := uc.game.GetSessionByID(id)
+	if err != nil {
+		return err
+	}
+	if session == nil {
+		return errors.New("invalid session")
+	}
 
 	return uc.game.FinishSession(id, summary)
+}
+
+func (uc *GameUseCase) GetAllGames(userID int) ([]models.Game, error) {
+	games, err := uc.game.GetAllGames(userID)
+	if err != nil {
+		return nil, err
+	}
+	return games, nil
+}
+
+func (uc *GameUseCase) GetGamePlayers(id int) ([]models.GamePlayer, error) {
+	players, err := uc.game.GetGamePlayers(id)
+	if err != nil {
+		return nil, err
+	}
+	return players, nil
 }

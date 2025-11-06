@@ -43,6 +43,8 @@ type GameRepository interface {
 	FinishSession(id int, summary string) error
 	GetGameByID(gameID int) (*Game, error)
 	GetSessionByID(sessionID int) (*Session, error)
+	GetAllGames(userID int) ([]Game, error)
+	GetGamePlayers(gameID int) ([]GamePlayer, error)
 }
 
 type GameService interface {
@@ -50,4 +52,6 @@ type GameService interface {
 	CreateSession(session *Session) (*Session, []Session, error)
 	EnterSession(key string, player *GamePlayer) (*Session, error)
 	FinishSession(id int, summary string) error
+	GetAllGames(userID int) ([]Game, error)
+	GetGamePlayers(gameID int) ([]GamePlayer, error)
 }

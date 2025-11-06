@@ -183,3 +183,73 @@ func (r *GameRepository) GetSessionByID(sessionID int) (*models.Session, error) 
 
 	return &session, nil
 }
+
+func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
+	query := `
+		SELECT g.id, g.name, g.master_id 
+		FROM games g
+		LEFT JOIN game_players gp ON g.id = gp.game_id AND gp.user_id = $1
+		WHERE g.master_id = $1 OR gp.user_id = $1
+	`
+
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query games: %w", err)
+	}
+	defer rows.Close()
+
+	var games []models.Game
+	for rows.Next() {
+		var game models.Game
+		err := rows.Scan(
+			&game.ID,
+			&game.Name,
+			&game.MasterID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan game: %w", err)
+		}
+		games = append(games, game)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating games: %w", err)
+	}
+
+	return games, nil
+}
+
+func (r *GameRepository) GetGamePlayers(gameID int) ([]models.GamePlayer, error) {
+	query := `
+		SELECT id, game_id, user_id, character_id
+		FROM game_players 
+		WHERE game_id = $1
+	`
+
+	rows, err := r.db.Query(query, gameID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query game players: %w", err)
+	}
+	defer rows.Close()
+
+	var players []models.GamePlayer
+	for rows.Next() {
+		var player models.GamePlayer
+		err := rows.Scan(
+			&player.ID,
+			&player.GameID,
+			&player.UserID,
+			&player.CharacterID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan game player: %w", err)
+		}
+		players = append(players, player)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating game players: %w", err)
+	}
+
+	return players, nil
+}
