@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"role-helper/cfg"
 	"role-helper/internal/delivery/http/character"
+	games "role-helper/internal/delivery/http/games"
 	"role-helper/internal/delivery/http/user"
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/repository"
@@ -44,6 +45,13 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 	ur := repository.NewUserRepository(db)
 	uu := usecase.NewUserUsecase(ur, client)
 
+	gameRepoInterface := repository.NewGameRepository(db)
+	gameRepo, ok := gameRepoInterface.(*repository.GameRepository)
+	if !ok {
+		log.Fatalf("unexpected type for game repository: %T", gameRepoInterface)
+	}
+	gu := usecase.NewGameUseCase(gameRepo, ur, cr)
+
 	router := mux.NewRouter()
 	router = router.PathPrefix("/api").Subrouter()
 
@@ -52,6 +60,9 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 
 	characterRout := character.NewCharacterRouter(cu)
 	characterRout.SetupCharacterRoutes(router)
+
+	gameRout := games.NewGameRouter(gu)
+	gameRout.SetupRoutes(router)
 
 	userRout := user.NewUserRouter(uu)
 	userRout.SetupRoutes(router)

@@ -17,9 +17,6 @@ func NewGameUseCase(game *repository.GameRepository, user *repository.UserReposi
 }
 
 func (uc *GameUseCase) CreateGame(gameReq *models.Game) (*models.Game, error) {
-	if gameReq.Name == "" {
-		return nil, errors.New("game name cannot be empty")
-	}
 	return uc.game.CreateGame(gameReq)
 }
 
@@ -70,6 +67,8 @@ func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*mod
 		return nil, errors.New("session not found")
 	}
 
+	player.GameID = session.GameID
+
 	err = uc.game.AddPlayerToGame(player)
 	if err != nil {
 		return nil, err
@@ -79,9 +78,6 @@ func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*mod
 }
 
 func (uc *GameUseCase) FinishSession(id int, summary string) error {
-	if summary == "" {
-		return errors.New("summary cannot be empty")
-	}
 	session, err := uc.game.GetSessionByID(id)
 	if err != nil {
 		return err

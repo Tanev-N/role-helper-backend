@@ -43,6 +43,8 @@ info:
 servers:
   - url: http://localhost:8080
 tags:
+  - name: games
+    description: Управление играми, сессиями и игроками
   - name: characters
     description: Работа с персонажами DnD
   - name: auth
@@ -182,6 +184,111 @@ paths:
       responses:
         "204":
           description: Пользователь вышел
+
+  /api/games:
+    post:
+      tags: [games]
+      summary: Создание новой игры
+      description: Создаёт игру для текущего пользователя-мастера. Тело запроса не требуется.
+      responses:
+        "201":
+          description: Игра создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+    get:
+      tags: [games]
+      summary: Получение списка игр пользователя
+      responses:
+        "200":
+          description: Список игр, в которых участвует пользователь (как мастер или игрок)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+
+  /api/games/{game_id}/sessions:
+    post:
+      tags: [games]
+      summary: Создание сессии для игры
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "201":
+          description: Сессия создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateSessionResponse"
+
+  /api/games/sessions/enter:
+    post:
+      tags: [games]
+      summary: Присоединение к сессии по коду
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EnterSessionRequest"
+      responses:
+        "200":
+          description: Пользователь успешно присоединился к сессии
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /api/games/sessions/{session_id}/finish:
+    post:
+      tags: [games]
+      summary: Завершение сессии
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FinishSessionRequest"
+      responses:
+        "200":
+          description: Сессия завершена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /api/games/{game_id}/players:
+    get:
+      tags: [games]
+      summary: Получение игроков игры
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Список игроков игры
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GamePlayer"
 
 components:
   schemas:
@@ -657,6 +764,97 @@ components:
           type: string
         password:
           type: string
+
+    Game:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "SESSION-1762519417783061264"
+        master_id:
+          type: integer
+          example: 2
+
+    Session:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4
+        game_id:
+          type: integer
+          example: 3
+        session_key:
+          type: string
+          example: "AF83B08DE1F7"
+        summary:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    GamePlayer:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 4
+        game_id:
+          type: integer
+          example: 3
+        user_id:
+          type: integer
+          example: 2
+        character_id:
+          type: string
+          example: "0bf33c42-fe74-4398-ad06-2a60c94b2652"
+
+    CreateSessionResponse:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/Session"
+        previous_sessions:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Session"
+
+    EnterSessionRequest:
+      type: object
+      required:
+        - session_key
+        - character_id
+      properties:
+        session_key:
+          type: string
+          example: "AF83B08DE1F7"
+        character_id:
+          type: string
+          example: "0bf33c42-fe74-4398-ad06-2a60c94b2652"
+
+    FinishSessionRequest:
+      type: object
+      properties:
+        summary:
+          type: string
+          example: "Wizard saved the village"
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Сессия завершена"
 
     TokenResponse:
       type: object

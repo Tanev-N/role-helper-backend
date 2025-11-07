@@ -106,11 +106,12 @@ func (r *GameRepository) AddPlayerToGame(player *models.GamePlayer) error {
 	query := `
         INSERT INTO game_players (game_id, user_id, character_id) 
         VALUES ($1, $2, $3)
+        RETURNING id
     `
 
 	err := r.db.QueryRow(query, player.GameID, player.UserID, player.CharacterID).Scan(&player.ID)
 	if err != nil {
-		return fmt.Errorf("failed to get session: %w", err)
+		return fmt.Errorf("failed to add player to game: %w", err)
 	}
 	return nil
 }

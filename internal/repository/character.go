@@ -17,7 +17,7 @@ func NewCharacterRepository(db *sql.DB) *CharacterRepository {
 
 func (cr *CharacterRepository) Create(character *models.Character) (*models.Character, error) {
 	character.ID = uuid.New().String()
-	
+
 	query := `
 		INSERT INTO characters (
 			id, name, race, class, level, alignment, background, player_name, experience,
@@ -138,7 +138,6 @@ func (cr *CharacterRepository) Update(id string, update *models.Character) (*mod
 		return nil, models.ErrCharacterNotFound
 	}
 
-	// Обновляем только непустые поля
 	if update.Name != "" {
 		existing.Name = update.Name
 	}
@@ -321,7 +320,6 @@ func (cr *CharacterRepository) Delete(id string) error {
 
 	return nil
 }
-
 
 func (cr *CharacterRepository) getSkills(characterID string) ([]models.CharacterSkill, error) {
 	query := `SELECT name, modifier, proficient, ability FROM character_skills WHERE character_id = $1 ORDER BY name`
