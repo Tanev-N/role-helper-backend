@@ -16,9 +16,9 @@ func NewGameRepository(db *sql.DB) models.GameRepository {
 }
 
 func (r *GameRepository) CreateGame(game *models.Game) (*models.Game, error) {
-	query := `INSERT INTO games (name, master_id) VALUES ($1, $2) RETURNING id`
+	query := `INSERT INTO games (name, master_id, description) VALUES ($1, $2, $3) RETURNING id`
 
-	err := r.db.QueryRow(query, game.Name, game.MasterID).Scan(&game.ID)
+	err := r.db.QueryRow(query, game.Name, game.MasterID, game.Description).Scan(&game.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create game: %w", err)
 	}
@@ -143,12 +143,13 @@ func (r *GameRepository) FinishSession(id int, summary string) error {
 func (r *GameRepository) GetGameByID(gameID int) (*models.Game, error) {
 	var game models.Game
 
-	query := `SELECT id, name, master_id FROM games WHERE id = $1`
+	query := `SELECT id, name, master_id, description FROM games WHERE id = $1`
 
 	err := r.db.QueryRow(query, gameID).Scan(
 		&game.ID,
 		&game.Name,
 		&game.MasterID,
+		&game.Description,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -187,7 +188,7 @@ func (r *GameRepository) GetSessionByID(sessionID int) (*models.Session, error) 
 
 func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 	query := `
-		SELECT g.id, g.name, g.master_id 
+		SELECT g.id, g.name, g.master_id, g.description
 		FROM games g
 		LEFT JOIN game_players gp ON g.id = gp.game_id AND gp.user_id = $1
 		WHERE g.master_id = $1 OR gp.user_id = $1
@@ -206,6 +207,7 @@ func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 			&game.ID,
 			&game.Name,
 			&game.MasterID,
+			&game.Description,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan game: %w", err)

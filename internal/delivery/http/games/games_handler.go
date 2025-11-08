@@ -24,7 +24,8 @@ type enterSessionRequest struct {
 }
 
 type createGameRequest struct {
-	Name string `json:"name"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
 
 type finishSessionRequest struct {
@@ -45,8 +46,9 @@ func (gr *GameRouter) CreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 
 	game := &models.Game{
-		Name:     req.Name,
-		MasterID: user.ID,
+		Name:        req.Name,
+		MasterID:    user.ID,
+		Description: req.Description,
 	}
 
 	createdGame, err := gr.GameUsecase.CreateGame(game)

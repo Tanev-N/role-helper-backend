@@ -449,11 +449,16 @@ components:
       type: object
       required:
         - name
+        - description
       properties:
         name:
           type: string
           example: "Моя эпическая кампания"
           description: Название игры
+        description:
+          type: string
+          example: "Описание"
+          description: Описание игры
     CharacterCreate:
       type: object
       required:

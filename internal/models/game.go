@@ -5,9 +5,10 @@ import (
 )
 
 type Game struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	MasterID int    `json:"master_id"`
+	ID          int    `json:"id"`
+	Name        string `json:"name"`
+	MasterID    int    `json:"master_id"`
+	Description string `json:"description"`
 }
 
 type Session struct {

@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     master_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE
+    description VARCHAR(1000)
 );
 
 CREATE TABLE sessions (
