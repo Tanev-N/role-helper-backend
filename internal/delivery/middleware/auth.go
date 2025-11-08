@@ -22,6 +22,8 @@ func Auth(us models.UserService) func(http.Handler) http.Handler {
 				if err == nil && user != nil {
 					ctx := context.WithValue(r.Context(), userCtxKey, user)
 					r = r.WithContext(ctx)
+				} else {
+					log.Println(err.Error())
 				}
 			}
 			next.ServeHTTP(w, r)
