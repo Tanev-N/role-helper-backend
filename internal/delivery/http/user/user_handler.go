@@ -32,7 +32,7 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	user, token, err := ur.UserUsecase.Register(&req)
+	user, _, err := ur.UserUsecase.Register(&req)
 	if err != nil {
 		if err == models.ErrUserAlreadyExists {
 			writeErrorResponse(w, http.StatusConflict, err, "Пользователь уже существует")
@@ -42,14 +42,14 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    token,
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-		Path:     "/",
-		SameSite: http.SameSiteLaxMode,
-	})
+	//http.SetCookie(w, &http.Cookie{
+	//	Name:     "auth_token",
+	//	Value:    token,
+	//	Expires:  time.Now().Add(24 * time.Hour),
+	//	HttpOnly: true,
+	//	Path:     "/",
+	//	SameSite: http.SameSiteLaxMode,
+	//})
 
 	respUser := map[string]interface{}{
 		"id":         user.ID,

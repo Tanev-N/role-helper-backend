@@ -24,6 +24,7 @@ func Auth(us models.UserService) func(http.Handler) http.Handler {
 					r = r.WithContext(ctx)
 				} else {
 					log.Println(err.Error(), "MIDDLEWARE")
+
 				}
 			}
 			next.ServeHTTP(w, r)
