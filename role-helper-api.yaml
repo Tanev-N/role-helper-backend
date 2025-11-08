@@ -187,9 +187,15 @@ paths:
 
   /api/games:
     post:
-      tags: [games]
+      tags: [ games ]
       summary: Создание новой игры
-      description: Создаёт игру для текущего пользователя-мастера. Тело запроса не требуется.
+      description: Создаёт игру для текущего пользователя-мастера с указанным названием.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGameRequest"
       responses:
         "201":
           description: Игра создана
@@ -439,7 +445,15 @@ components:
         photo:
           type: string
           example: "https://example.com/aragorn.jpg"
-
+    CreateGameRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Моя эпическая кампания"
+          description: Название игры
     CharacterCreate:
       type: object
       required:

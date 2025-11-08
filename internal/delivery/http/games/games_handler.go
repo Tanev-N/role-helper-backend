@@ -3,14 +3,11 @@ package games
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
+	"github.com/gorilla/mux"
 	"io"
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
-
-	"github.com/gorilla/mux"
 
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
@@ -26,6 +23,10 @@ type enterSessionRequest struct {
 	CharacterID string `json:"character_id"`
 }
 
+type createGameRequest struct {
+	Name string `json:"name"`
+}
+
 type finishSessionRequest struct {
 	Summary string `json:"summary"`
 }
@@ -37,8 +38,14 @@ func (gr *GameRouter) CreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var req createGameRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, err, "Неверный формат JSON")
+		return
+	}
+
 	game := &models.Game{
-		Name:     fmt.Sprintf("SESSION-%d", time.Now().UnixNano()),
+		Name:     req.Name,
 		MasterID: user.ID,
 	}
 
@@ -47,7 +54,6 @@ func (gr *GameRouter) CreateGame(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось создать игру")
 		return
 	}
-
 	writeSuccessResponse(w, http.StatusCreated, createdGame)
 }
 
