@@ -90,7 +90,8 @@ func (uu *UserUsecase) Login(req *models.UserLoginRequest) (*models.User, string
 
 	ctx := context.Background()
 	key := "session:" + token
-	if err := uu.redis.Set(ctx, key, user.ID, sessionTTL).Err(); err != nil {
+	id := strconv.Itoa(user.ID)
+	if err := uu.redis.Set(ctx, key, id, sessionTTL).Err(); err != nil {
 		return nil, "", err
 	}
 
