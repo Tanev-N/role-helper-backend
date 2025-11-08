@@ -23,7 +23,7 @@ func Auth(us models.UserService) func(http.Handler) http.Handler {
 					ctx := context.WithValue(r.Context(), userCtxKey, user)
 					r = r.WithContext(ctx)
 				} else {
-					log.Println(err.Error())
+					log.Println(err.Error(), "MIDDLEWARE")
 				}
 			}
 			next.ServeHTTP(w, r)
