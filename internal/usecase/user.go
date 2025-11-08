@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"log"
 	"role-helper/internal/models"
 	"strconv"
 	"time"
@@ -69,6 +70,14 @@ func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, 
 		return nil, "", err
 	}
 
+	ctx := context.Background()
+	key := "session:" + token
+	id := strconv.Itoa(user.ID)
+	if err := uu.redis.Set(ctx, key, id, sessionTTL).Err(); err != nil {
+		log.Println(err, "SIGNUP")
+		return nil, "", err
+	}
+
 	return createdUser, token, nil
 }
 
@@ -92,6 +101,7 @@ func (uu *UserUsecase) Login(req *models.UserLoginRequest) (*models.User, string
 	key := "session:" + token
 	id := strconv.Itoa(user.ID)
 	if err := uu.redis.Set(ctx, key, id, sessionTTL).Err(); err != nil {
+		log.Println(err, "LOGIN")
 		return nil, "", err
 	}
 
