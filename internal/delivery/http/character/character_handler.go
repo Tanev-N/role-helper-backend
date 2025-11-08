@@ -3,6 +3,7 @@ package character
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"log"
 	"net/http"
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
@@ -11,6 +12,7 @@ import (
 
 func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
+
 	var character models.Character
 
 	if err := json.NewDecoder(r.Body).Decode(&character); err != nil {
@@ -33,7 +35,7 @@ func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Reques
 
 func (cr *CharacterRouter) GetCharacters(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
-
+	log.Println(user.ID, user.Username, "getall")
 	characters, err := cr.CharacterUsecase.GetAll(user.ID)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось получить список персонажей")
