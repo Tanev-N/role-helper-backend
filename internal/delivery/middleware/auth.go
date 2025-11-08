@@ -31,6 +31,7 @@ func Auth(us models.UserService) func(http.Handler) http.Handler {
 func GetUserFromContext(r *http.Request) *models.User {
 	v := r.Context().Value(userCtxKey)
 	if v == nil {
+		log.Println("AAAAAAA")
 		return nil
 	}
 	u, _ := v.(*models.User)
