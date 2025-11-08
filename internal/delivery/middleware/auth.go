@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"role-helper/internal/models"
 )
@@ -33,5 +34,6 @@ func GetUserFromContext(r *http.Request) *models.User {
 		return nil
 	}
 	u, _ := v.(*models.User)
+	log.Println(u.Username, u.ID)
 	return u
 }
