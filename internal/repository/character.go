@@ -3,24 +3,20 @@ package repository
 import (
 	"database/sql"
 	"role-helper/internal/models"
-
-	"github.com/google/uuid"
 )
 
 type CharacterRepository struct {
 	db *sql.DB
 }
 
-func NewCharacterRepository(db *sql.DB) *CharacterRepository {
+func NewCharacterRepository(db *sql.DB) models.CharacterRepository {
 	return &CharacterRepository{db: db}
 }
 
 func (cr *CharacterRepository) Create(character *models.Character) (*models.Character, error) {
-	character.ID = uuid.New().String()
-
 	query := `
 		INSERT INTO characters (
-			id, name, race, class, level, alignment, background, player_name, experience,
+			name, race, class, level, alignment, background, player_name, experience,
 			strength, dexterity, constitution, intelligence, wisdom, charisma,
 			strength_mod, dexterity_mod, constitution_mod, intelligence_mod, wisdom_mod, charisma_mod,
 			proficiency_bonus, initiative, armor_class, speed, hit_points, max_hit_points, temp_hit_points, hit_dice,
@@ -32,18 +28,19 @@ func (cr *CharacterRepository) Create(character *models.Character) (*models.Char
 			$16, $17, $18, $19, $20, $21,
 			$22, $23, $24, $25, $26, $27, $28, $29,
 			$30, $31, $32, $33, $34, $35,
-			$36, $37, $38, $39, $40, $41, $42, $43, $44
+			$36, $37, $38, $39, $40, $41, $42, $43
 		)
+		RETURNING id
 	`
 
-	_, err := cr.db.Exec(query,
+	err := cr.db.QueryRow(query,
 		character.ID, character.Name, character.Race, character.Class, character.Level, character.Alignment, character.Background, character.PlayerName, character.Experience,
 		character.Strength, character.Dexterity, character.Constitution, character.Intelligence, character.Wisdom, character.Charisma,
 		character.StrengthMod, character.DexterityMod, character.ConstitutionMod, character.IntelligenceMod, character.WisdomMod, character.CharismaMod,
 		character.ProficiencyBonus, character.Initiative, character.ArmorClass, character.Speed, character.HitPoints, character.MaxHitPoints, character.TempHitPoints, character.HitDice,
 		character.StrengthSave, character.DexteritySave, character.ConstitutionSave, character.IntelligenceSave, character.WisdomSave, character.CharismaSave,
 		character.PersonalityTraits, character.Ideals, character.Bonds, character.Flaws, character.Proficiencies, character.Languages, character.Senses, character.Features, character.Photo,
-	)
+	).Scan(&character.ID)
 
 	if err != nil {
 		return nil, err
@@ -62,9 +59,9 @@ func (cr *CharacterRepository) Create(character *models.Character) (*models.Char
 	return character, nil
 }
 
-func (cr *CharacterRepository) GetAll() ([]models.CharacterShort, error) {
-	query := `SELECT id, name, photo FROM characters ORDER BY name`
-	rows, err := cr.db.Query(query)
+func (cr *CharacterRepository) GetAll(userID int) ([]models.CharacterShort, error) {
+	query := `SELECT id, name, photo FROM characters WHERE user_id = $1 ORDER BY name`
+	rows, err := cr.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +80,7 @@ func (cr *CharacterRepository) GetAll() ([]models.CharacterShort, error) {
 	return characters, nil
 }
 
-func (cr *CharacterRepository) FindByID(id string) (*models.Character, error) {
+func (cr *CharacterRepository) FindByID(id int) (*models.Character, error) {
 	query := `
 		SELECT id, name, race, class, level, alignment, background, player_name, experience,
 			strength, dexterity, constitution, intelligence, wisdom, charisma,
@@ -129,7 +126,7 @@ func (cr *CharacterRepository) FindByID(id string) (*models.Character, error) {
 	return character, nil
 }
 
-func (cr *CharacterRepository) Update(id string, update *models.Character) (*models.Character, error) {
+func (cr *CharacterRepository) Update(id int, update *models.Character) (*models.Character, error) {
 	existing, err := cr.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -302,7 +299,7 @@ func (cr *CharacterRepository) Update(id string, update *models.Character) (*mod
 	return existing, nil
 }
 
-func (cr *CharacterRepository) Delete(id string) error {
+func (cr *CharacterRepository) Delete(id int) error {
 	query := `DELETE FROM characters WHERE id = $1`
 	result, err := cr.db.Exec(query, id)
 	if err != nil {
@@ -321,7 +318,7 @@ func (cr *CharacterRepository) Delete(id string) error {
 	return nil
 }
 
-func (cr *CharacterRepository) getSkills(characterID string) ([]models.CharacterSkill, error) {
+func (cr *CharacterRepository) getSkills(characterID int) ([]models.CharacterSkill, error) {
 	query := `SELECT name, modifier, proficient, ability FROM character_skills WHERE character_id = $1 ORDER BY name`
 	rows, err := cr.db.Query(query, characterID)
 	if err != nil {
@@ -342,7 +339,7 @@ func (cr *CharacterRepository) getSkills(characterID string) ([]models.Character
 	return skills, nil
 }
 
-func (cr *CharacterRepository) saveSkills(characterID string, skills []models.CharacterSkill) error {
+func (cr *CharacterRepository) saveSkills(characterID int, skills []models.CharacterSkill) error {
 	if len(skills) == 0 {
 		return nil
 	}
@@ -358,7 +355,7 @@ func (cr *CharacterRepository) saveSkills(characterID string, skills []models.Ch
 	return nil
 }
 
-func (cr *CharacterRepository) updateSkills(characterID string, skills []models.CharacterSkill) error {
+func (cr *CharacterRepository) updateSkills(characterID int, skills []models.CharacterSkill) error {
 	deleteQuery := `DELETE FROM character_skills WHERE character_id = $1`
 	_, err := cr.db.Exec(deleteQuery, characterID)
 	if err != nil {
@@ -368,7 +365,7 @@ func (cr *CharacterRepository) updateSkills(characterID string, skills []models.
 	return cr.saveSkills(characterID, skills)
 }
 
-func (cr *CharacterRepository) getEquipment(characterID string) ([]models.Equipment, error) {
+func (cr *CharacterRepository) getEquipment(characterID int) ([]models.Equipment, error) {
 	query := `SELECT name, description FROM character_equipment WHERE character_id = $1 ORDER BY name`
 	rows, err := cr.db.Query(query, characterID)
 	if err != nil {
@@ -389,7 +386,7 @@ func (cr *CharacterRepository) getEquipment(characterID string) ([]models.Equipm
 	return equipment, nil
 }
 
-func (cr *CharacterRepository) saveEquipment(characterID string, equipment []models.Equipment) error {
+func (cr *CharacterRepository) saveEquipment(characterID int, equipment []models.Equipment) error {
 	if len(equipment) == 0 {
 		return nil
 	}
@@ -405,7 +402,7 @@ func (cr *CharacterRepository) saveEquipment(characterID string, equipment []mod
 	return nil
 }
 
-func (cr *CharacterRepository) updateEquipment(characterID string, equipment []models.Equipment) error {
+func (cr *CharacterRepository) updateEquipment(characterID int, equipment []models.Equipment) error {
 	deleteQuery := `DELETE FROM character_equipment WHERE character_id = $1`
 	_, err := cr.db.Exec(deleteQuery, characterID)
 	if err != nil {
@@ -415,7 +412,7 @@ func (cr *CharacterRepository) updateEquipment(characterID string, equipment []m
 	return cr.saveEquipment(characterID, equipment)
 }
 
-func (cr *CharacterRepository) getSpells(characterID string) ([]models.Spell, error) {
+func (cr *CharacterRepository) getSpells(characterID int) ([]models.Spell, error) {
 	query := `SELECT name, description FROM character_spells WHERE character_id = $1 ORDER BY name`
 	rows, err := cr.db.Query(query, characterID)
 	if err != nil {
@@ -436,7 +433,7 @@ func (cr *CharacterRepository) getSpells(characterID string) ([]models.Spell, er
 	return spells, nil
 }
 
-func (cr *CharacterRepository) saveSpells(characterID string, spells []models.Spell) error {
+func (cr *CharacterRepository) saveSpells(characterID int, spells []models.Spell) error {
 	if len(spells) == 0 {
 		return nil
 	}
@@ -452,11 +449,24 @@ func (cr *CharacterRepository) saveSpells(characterID string, spells []models.Sp
 	return nil
 }
 
-func (cr *CharacterRepository) updateSpells(characterID string, spells []models.Spell) error {
+func (cr *CharacterRepository) updateSpells(characterID int, spells []models.Spell) error {
 	deleteQuery := `DELETE FROM character_spells WHERE character_id = $1`
 	_, err := cr.db.Exec(deleteQuery, characterID)
 	if err != nil {
 		return err
 	}
 	return cr.saveSpells(characterID, spells)
+}
+
+func (cr *CharacterRepository) CheckBelonging(id, userID int) (bool, error) {
+	query := `SELECT user_id FROM characters WHERE character_id = $1`
+	var userIDChar int
+	err := cr.db.QueryRow(query, id).Scan(&userIDChar)
+	if err != nil {
+		return false, err
+	}
+	if userIDChar != userID {
+		return false, nil
+	}
+	return true, nil
 }

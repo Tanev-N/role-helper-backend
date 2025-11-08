@@ -21,10 +21,10 @@ type Session struct {
 }
 
 type GamePlayer struct {
-	ID          int    `json:"id"`
-	GameID      int    `json:"game_id"`
-	UserID      int    `json:"user_id"`
-	CharacterID string `json:"character_id"`
+	ID          int `json:"id"`
+	GameID      int `json:"game_id"`
+	UserID      int `json:"user_id"`
+	CharacterID int `json:"character_id"`
 }
 
 type EnterSession struct {

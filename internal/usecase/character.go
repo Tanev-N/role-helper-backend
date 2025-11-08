@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"role-helper/internal/models"
 	"role-helper/internal/utils"
@@ -17,24 +18,38 @@ func NewCharacterUsecase(repo models.CharacterRepository) models.CharacterServic
 }
 
 func (c *CharacterUsecase) Create(createReq *models.Character) (*models.Character, error) {
+	ok, err := c.repo.CheckBelonging(createReq.ID, createReq.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("character does not belong to user")
+	}
 	utils.AutoCalculateCharacterStats(createReq)
-	
+
 	if len(createReq.Skills) == 0 {
 		createReq.Skills = utils.GetDefaultSkills()
 		utils.AutoCalculateCharacterStats(createReq)
 	}
-	
+
 	if err := validator.ValidateCharacter(*createReq); err != nil {
 		return nil, err
 	}
 	return c.repo.Create(createReq)
 }
 
-func (c *CharacterUsecase) GetAll() ([]models.CharacterShort, error) {
-	return c.repo.GetAll()
+func (c *CharacterUsecase) GetAll(userID int) ([]models.CharacterShort, error) {
+	return c.repo.GetAll(userID)
 }
 
-func (c *CharacterUsecase) FindByID(id string) (*models.Character, error) {
+func (c *CharacterUsecase) FindByID(id, userID int) (*models.Character, error) {
+	ok, err := c.repo.CheckBelonging(id, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("character does not belong to user")
+	}
 	character, err := c.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -45,7 +60,14 @@ func (c *CharacterUsecase) FindByID(id string) (*models.Character, error) {
 	return character, nil
 }
 
-func (c *CharacterUsecase) Update(id string, update *models.Character) (*models.Character, error) {
+func (c *CharacterUsecase) Update(id int, userID int, update *models.Character) (*models.Character, error) {
+	ok, err := c.repo.CheckBelonging(id, userID)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("character does not belong to user")
+	}
 	character, err := c.repo.FindByID(id)
 	if err != nil {
 		return nil, err
@@ -192,7 +214,7 @@ func (c *CharacterUsecase) Update(id string, update *models.Character) (*models.
 	if update.Spells != nil {
 		character.Spells = update.Spells
 	}
-	
+
 	character.StrengthSave = update.StrengthSave
 	character.DexteritySave = update.DexteritySave
 	character.ConstitutionSave = update.ConstitutionSave
@@ -201,11 +223,18 @@ func (c *CharacterUsecase) Update(id string, update *models.Character) (*models.
 	character.CharismaSave = update.CharismaSave
 
 	utils.AutoCalculateCharacterStats(character)
-	
+
 	return c.repo.Update(id, character)
 }
 
-func (c *CharacterUsecase) Delete(id string) error {
+func (c *CharacterUsecase) Delete(id, userID int) error {
+	ok, err := c.repo.CheckBelonging(id, userID)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return errors.New("character does not belong to user")
+	}
 	character, err := c.repo.FindByID(id)
 	if err != nil {
 		return err

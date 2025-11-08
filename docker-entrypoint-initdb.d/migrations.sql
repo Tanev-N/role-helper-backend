@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Создание таблицы персонажей
 CREATE TABLE IF NOT EXISTS characters (
-    id VARCHAR(50) PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     race VARCHAR(50) NOT NULL,
     class VARCHAR(50) NOT NULL,
@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS characters (
     background VARCHAR(100),
     player_name VARCHAR(100),
     experience INTEGER DEFAULT 0 CHECK (experience >= 0),
+    user_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
     -- Основные характеристики
     strength INTEGER NOT NULL CHECK (strength >= 1 AND strength <= 30),
@@ -71,7 +72,7 @@ CREATE TABLE IF NOT EXISTS characters (
 -- Создание таблицы навыков персонажа
 CREATE TABLE IF NOT EXISTS character_skills (
     id SERIAL PRIMARY KEY,
-    character_id VARCHAR(50) NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_id SERIAL NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     name VARCHAR(50) NOT NULL,
     modifier INTEGER DEFAULT 0,
     proficient BOOLEAN DEFAULT FALSE,
@@ -81,7 +82,7 @@ CREATE TABLE IF NOT EXISTS character_skills (
 -- Создание таблицы снаряжения персонажа
 CREATE TABLE IF NOT EXISTS character_equipment (
     id SERIAL PRIMARY KEY,
-    character_id VARCHAR(50) NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_id SERIAL NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     description TEXT
 );
@@ -89,7 +90,7 @@ CREATE TABLE IF NOT EXISTS character_equipment (
 -- Создание таблицы заклинаний персонажа
 CREATE TABLE IF NOT EXISTS character_spells (
     id SERIAL PRIMARY KEY,
-    character_id VARCHAR(50) NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_id SERIAL NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     description TEXT
 );
@@ -114,6 +115,6 @@ CREATE TABLE game_players (
     id SERIAL PRIMARY KEY,
     game_id SERIAL NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     user_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    character_id VARCHAR(50) NOT NULL REFERENCES characters(id),
+    character_id SERIAL NOT NULL REFERENCES characters(id),
     UNIQUE(game_id, user_id)
 );

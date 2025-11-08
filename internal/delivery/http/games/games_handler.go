@@ -20,7 +20,7 @@ type createSessionResponse struct {
 
 type enterSessionRequest struct {
 	SessionKey  string `json:"session_key"`
-	CharacterID string `json:"character_id"`
+	CharacterID int    `json:"character_id"`
 }
 
 type createGameRequest struct {
@@ -118,13 +118,13 @@ func (gr *GameRouter) EnterSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.SessionKey = strings.TrimSpace(req.SessionKey)
-	req.CharacterID = strings.TrimSpace(req.CharacterID)
+	req.CharacterID = req.CharacterID
 
 	switch {
 	case req.SessionKey == "":
 		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty session key"), "Код сессии не может быть пустым")
 		return
-	case req.CharacterID == "":
+	case req.CharacterID == 0:
 		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty character id"), "Необходимо указать персонажа")
 		return
 	}

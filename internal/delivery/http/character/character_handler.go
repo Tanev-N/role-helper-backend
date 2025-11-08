@@ -4,17 +4,20 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
+	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
+	"strconv"
 )
 
 func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
 	var character models.Character
 
 	if err := json.NewDecoder(r.Body).Decode(&character); err != nil {
 		writeErrorResponse(w, http.StatusBadRequest, err, "Неверный формат JSON")
 		return
 	}
-
+	character.UserID = user.ID
 	createdCharacter, err := cr.CharacterUsecase.Create(&character)
 	if err != nil {
 		if isValidationError(err) {
@@ -29,7 +32,9 @@ func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Reques
 }
 
 func (cr *CharacterRouter) GetCharacters(w http.ResponseWriter, r *http.Request) {
-	characters, err := cr.CharacterUsecase.GetAll()
+	user := middleware.GetUserFromContext(r)
+
+	characters, err := cr.CharacterUsecase.GetAll(user.ID)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось получить список персонажей")
 		return
@@ -39,10 +44,11 @@ func (cr *CharacterRouter) GetCharacters(w http.ResponseWriter, r *http.Request)
 }
 
 func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id, _ := strconv.Atoi(vars["id"])
 
-	character, err := cr.CharacterUsecase.FindByID(id)
+	character, err := cr.CharacterUsecase.FindByID(id, user.ID)
 	if err != nil {
 		if err == models.ErrCharacterNotFound {
 			writeErrorResponse(w, http.StatusNotFound, err, "Персонаж не найден")
@@ -56,8 +62,9 @@ func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) 
 }
 
 func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id, _ := strconv.Atoi(vars["id"])
 
 	var updateCharacter models.Character
 	if err := json.NewDecoder(r.Body).Decode(&updateCharacter); err != nil {
@@ -65,7 +72,7 @@ func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	updatedCharacter, err := cr.CharacterUsecase.Update(id, &updateCharacter)
+	updatedCharacter, err := cr.CharacterUsecase.Update(id, user.ID, &updateCharacter)
 	if err != nil {
 		if err == models.ErrCharacterNotFound {
 			writeErrorResponse(w, http.StatusNotFound, err, "Персонаж не найден")
@@ -83,10 +90,11 @@ func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Reques
 }
 
 func (cr *CharacterRouter) DeleteCharacter(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id, _ := strconv.Atoi(vars["id"])
 
-	err := cr.CharacterUsecase.Delete(id)
+	err := cr.CharacterUsecase.Delete(id, user.ID)
 	if err != nil {
 		if err == models.ErrCharacterNotFound {
 			writeErrorResponse(w, http.StatusNotFound, err, "Персонаж не найден")
