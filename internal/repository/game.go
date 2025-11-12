@@ -31,9 +31,9 @@ func (r *GameRepository) CreateSession(session *models.Session) (*models.Session
         VALUES ($1, 
             UPPER(SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 12))
         ) 
-        RETURNING id, session_key`
+        RETURNING id, session_key, created_at`
 
-	err := r.db.QueryRow(query, session.GameID).Scan(&session.ID, &session.SessionKey)
+	err := r.db.QueryRow(query, session.GameID).Scan(&session.ID, &session.SessionKey, &session.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}

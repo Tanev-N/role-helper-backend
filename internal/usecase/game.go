@@ -21,17 +21,17 @@ func (uc *GameUseCase) CreateGame(gameReq *models.Game) (*models.Game, error) {
 }
 
 func (uc *GameUseCase) CreateSession(session *models.Session) (*models.Session, []models.Session, error) {
-	session, err := uc.game.CreateSession(session)
+	createdSession, err := uc.game.CreateSession(session)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	sessions, err := uc.game.GetPreviousSessions(session.GameID)
+	sessions, err := uc.game.GetPreviousSessions(createdSession.GameID)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return session, sessions, nil
+	return createdSession, sessions, nil
 }
 
 func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*models.Session, error) {
