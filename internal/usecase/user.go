@@ -72,7 +72,7 @@ func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, 
 
 	ctx := context.Background()
 	key := "session:" + token
-	id := strconv.Itoa(user.ID)
+	id := strconv.Itoa(createdUser.ID)
 	if err := uu.redis.Set(ctx, key, id, sessionTTL).Err(); err != nil {
 		log.Println(err, "SIGNUP")
 		return nil, "", err
