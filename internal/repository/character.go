@@ -21,25 +21,25 @@ func (cr *CharacterRepository) Create(character *models.Character) (*models.Char
 			strength_mod, dexterity_mod, constitution_mod, intelligence_mod, wisdom_mod, charisma_mod,
 			proficiency_bonus, initiative, armor_class, speed, hit_points, max_hit_points, temp_hit_points, hit_dice,
 			strength_save, dexterity_save, constitution_save, intelligence_save, wisdom_save, charisma_save,
-			personality_traits, ideals, bonds, flaws, proficiencies, languages, senses, features, photo
+			personality_traits, ideals, bonds, flaws, proficiencies, languages, senses, features, photo, user_id
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9,
 			$10, $11, $12, $13, $14, $15,
 			$16, $17, $18, $19, $20, $21,
 			$22, $23, $24, $25, $26, $27, $28, $29,
 			$30, $31, $32, $33, $34, $35,
-			$36, $37, $38, $39, $40, $41, $42, $43
+			$36, $37, $38, $39, $40, $41, $42, $43, $44
 		)
 		RETURNING id
 	`
 
 	err := cr.db.QueryRow(query,
-		character.ID, character.Name, character.Race, character.Class, character.Level, character.Alignment, character.Background, character.PlayerName, character.Experience,
+		character.Name, character.Race, character.Class, character.Level, character.Alignment, character.Background, character.PlayerName, character.Experience,
 		character.Strength, character.Dexterity, character.Constitution, character.Intelligence, character.Wisdom, character.Charisma,
 		character.StrengthMod, character.DexterityMod, character.ConstitutionMod, character.IntelligenceMod, character.WisdomMod, character.CharismaMod,
 		character.ProficiencyBonus, character.Initiative, character.ArmorClass, character.Speed, character.HitPoints, character.MaxHitPoints, character.TempHitPoints, character.HitDice,
 		character.StrengthSave, character.DexteritySave, character.ConstitutionSave, character.IntelligenceSave, character.WisdomSave, character.CharismaSave,
-		character.PersonalityTraits, character.Ideals, character.Bonds, character.Flaws, character.Proficiencies, character.Languages, character.Senses, character.Features, character.Photo,
+		character.PersonalityTraits, character.Ideals, character.Bonds, character.Flaws, character.Proficiencies, character.Languages, character.Senses, character.Features, character.Photo, character.UserID,
 	).Scan(&character.ID)
 
 	if err != nil {
@@ -459,7 +459,7 @@ func (cr *CharacterRepository) updateSpells(characterID int, spells []models.Spe
 }
 
 func (cr *CharacterRepository) CheckBelonging(id, userID int) (bool, error) {
-	query := `SELECT user_id FROM characters WHERE character_id = $1`
+	query := `SELECT user_id FROM characters WHERE id = $1`
 	var userIDChar int
 	err := cr.db.QueryRow(query, id).Scan(&userIDChar)
 	if err != nil {
