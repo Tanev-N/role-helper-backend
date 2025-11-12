@@ -18,13 +18,6 @@ func NewCharacterUsecase(repo models.CharacterRepository) models.CharacterServic
 }
 
 func (c *CharacterUsecase) Create(createReq *models.Character) (*models.Character, error) {
-	ok, err := c.repo.CheckBelonging(createReq.ID, createReq.UserID)
-	if err != nil {
-		return nil, err
-	}
-	if !ok {
-		return nil, errors.New("character does not belong to user")
-	}
 	utils.AutoCalculateCharacterStats(createReq)
 
 	if len(createReq.Skills) == 0 {
