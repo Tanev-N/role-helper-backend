@@ -3,6 +3,9 @@ package repository
 import (
 	"database/sql"
 	"role-helper/internal/models"
+	"strings"
+
+	"github.com/lib/pq"
 )
 
 type UserRepository struct {
@@ -26,6 +29,14 @@ func (ur *UserRepository) Create(user *models.User) (*models.User, error) {
 		&user.AvatarURL,
 	)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" {
+				return nil, models.ErrUserAlreadyExists
+			}
+		}
+		if strings.Contains(err.Error(), "duplicate key") || strings.Contains(err.Error(), "unique constraint") {
+			return nil, models.ErrUserAlreadyExists
+		}
 		return nil, err
 	}
 

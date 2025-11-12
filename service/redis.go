@@ -3,9 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"role-helper/cfg"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func InitRedis(cfg *cfg.Config, DBnum int) (*redis.Client, error) {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"log"
 	"role-helper/internal/models"
 	"strconv"
 	"time"
@@ -33,20 +32,12 @@ func NewUserUsecase(userRepo models.UserRepository, redisClient *redis.Client) *
 }
 
 func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, string, error) {
-	if req.Password != req.RePassword {
-		return nil, "", models.ErrPasswordsDontMatch
-	}
-	if len(req.Username) < 4 {
-		return nil, "", models.ErrInvalidCredentials
-	}
-
-	if len(req.Password) < 6 {
-		return nil, "", models.ErrInvalidCredentials
-	}
-
 	_, err := uu.userRepo.FindByUsername(req.Username)
 	if err == nil {
 		return nil, "", models.ErrUserAlreadyExists
+	}
+	if err != nil && err != models.ErrUserNotFound {
+		return nil, "", err
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
@@ -74,7 +65,6 @@ func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, 
 	key := "session:" + token
 	id := strconv.Itoa(createdUser.ID)
 	if err := uu.redis.Set(ctx, key, id, sessionTTL).Err(); err != nil {
-		log.Println(err, "SIGNUP")
 		return nil, "", err
 	}
 
@@ -101,7 +91,6 @@ func (uu *UserUsecase) Login(req *models.UserLoginRequest) (*models.User, string
 	key := "session:" + token
 	id := strconv.Itoa(user.ID)
 	if err := uu.redis.Set(ctx, key, id, sessionTTL).Err(); err != nil {
-		log.Println(err, "LOGIN")
 		return nil, "", err
 	}
 

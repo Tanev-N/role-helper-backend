@@ -38,6 +38,14 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 			writeErrorResponse(w, http.StatusConflict, err, "Пользователь уже существует")
 			return
 		}
+		if err == models.ErrPasswordsDontMatch {
+			writeErrorResponse(w, http.StatusBadRequest, err, "Пароли не совпадают")
+			return
+		}
+		if err == models.ErrInvalidCredentials {
+			writeErrorResponse(w, http.StatusBadRequest, err, "Ошибка валидации")
+			return
+		}
 		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось создать пользователя")
 		return
 	}
