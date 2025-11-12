@@ -107,13 +107,24 @@ func (r *GameRepository) GetPreviousSessions(gameID string) ([]models.Session, e
 }
 
 func (r *GameRepository) AddPlayerToGame(player *models.GamePlayer) error {
+	checkQuery := `SELECT id FROM game_players WHERE game_id = $1 AND user_id = $2`
+	var existingID int
+	err := r.db.QueryRow(checkQuery, player.GameID, player.UserID).Scan(&existingID)
+	if err == nil {
+		player.ID = existingID
+		return nil
+	}
+	if err != sql.ErrNoRows {
+		return fmt.Errorf("failed to check player in game: %w", err)
+	}
+
 	query := `
         INSERT INTO game_players (game_id, user_id, character_id) 
         VALUES ($1, $2, $3)
         RETURNING id
     `
 
-	err := r.db.QueryRow(query, player.GameID, player.UserID, player.CharacterID).Scan(&player.ID)
+	err = r.db.QueryRow(query, player.GameID, player.UserID, player.CharacterID).Scan(&player.ID)
 	if err != nil {
 		return fmt.Errorf("failed to add player to game: %w", err)
 	}
