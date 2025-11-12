@@ -77,7 +77,7 @@ func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*mod
 	return session, nil
 }
 
-func (uc *GameUseCase) FinishSession(id int, summary string) error {
+func (uc *GameUseCase) FinishSession(id string, summary string) error {
 	session, err := uc.game.GetSessionByID(id)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func (uc *GameUseCase) GetAllGames(userID int) ([]models.Game, error) {
 	return games, nil
 }
 
-func (uc *GameUseCase) GetGamePlayers(id int) ([]models.GamePlayer, error) {
+func (uc *GameUseCase) GetGamePlayers(id string) ([]models.GamePlayer, error) {
 	players, err := uc.game.GetGamePlayers(id)
 	if err != nil {
 		return nil, err

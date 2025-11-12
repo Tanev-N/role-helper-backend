@@ -3,11 +3,11 @@ package games
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/mux"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
@@ -83,10 +83,9 @@ func (gr *GameRouter) CreateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	gameIDStr := vars["game_id"]
-	gameID, err := strconv.Atoi(gameIDStr)
-	if err != nil {
-		writeErrorResponse(w, http.StatusBadRequest, err, "Некорректный идентификатор игры")
+	gameID := vars["game_id"]
+	if gameID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty game_id"), "Некорректный идентификатор игры")
 		return
 	}
 
@@ -118,7 +117,6 @@ func (gr *GameRouter) EnterSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req.SessionKey = strings.TrimSpace(req.SessionKey)
-	req.CharacterID = req.CharacterID
 
 	switch {
 	case req.SessionKey == "":
@@ -172,10 +170,9 @@ func (gr *GameRouter) FinishSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	sessionIDStr := vars["session_id"]
-	sessionID, err := strconv.Atoi(sessionIDStr)
-	if err != nil {
-		writeErrorResponse(w, http.StatusBadRequest, err, "Некорректный идентификатор сессии")
+	sessionID := vars["session_id"]
+	if sessionID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty session_id"), "Некорректный идентификатор сессии")
 		return
 	}
 
@@ -213,10 +210,9 @@ func (gr *GameRouter) GetGamePlayers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vars := mux.Vars(r)
-	gameIDStr := vars["game_id"]
-	gameID, err := strconv.Atoi(gameIDStr)
-	if err != nil {
-		writeErrorResponse(w, http.StatusBadRequest, err, "Некорректный идентификатор игры")
+	gameID := vars["game_id"]
+	if gameID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty game_id"), "Некорректный идентификатор игры")
 		return
 	}
 

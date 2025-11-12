@@ -33,12 +33,16 @@ func (r *GameRepository) CreateSession(session *models.Session) (*models.Session
         ) 
         RETURNING id, session_key, created_at`
 
-	err := r.db.QueryRow(query, session.GameID).Scan(&session.ID, &session.SessionKey, &session.CreatedAt)
+	createdSession := &models.Session{
+		GameID: session.GameID,
+	}
+
+	err := r.db.QueryRow(query, session.GameID).Scan(&createdSession.ID, &createdSession.SessionKey, &createdSession.CreatedAt)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create session: %w", err)
 	}
 
-	return session, nil
+	return createdSession, nil
 }
 
 func (r *GameRepository) GetSessionByKey(sessionKey string) (*models.Session, error) {
@@ -68,7 +72,7 @@ func (r *GameRepository) GetSessionByKey(sessionKey string) (*models.Session, er
 	return &session, nil
 }
 
-func (r *GameRepository) GetPreviousSessions(gameID int) ([]models.Session, error) {
+func (r *GameRepository) GetPreviousSessions(gameID string) ([]models.Session, error) {
 	query := `
 		SELECT id, game_id, session_key, summary, created_at, finished_at 
 		FROM sessions 
@@ -116,7 +120,7 @@ func (r *GameRepository) AddPlayerToGame(player *models.GamePlayer) error {
 	return nil
 }
 
-func (r *GameRepository) FinishSession(id int, summary string) error {
+func (r *GameRepository) FinishSession(id string, summary string) error {
 	query := `
 		UPDATE sessions 
 		SET summary = $1, finished_at = NOW() 
@@ -140,7 +144,7 @@ func (r *GameRepository) FinishSession(id int, summary string) error {
 	return nil
 }
 
-func (r *GameRepository) GetGameByID(gameID int) (*models.Game, error) {
+func (r *GameRepository) GetGameByID(gameID string) (*models.Game, error) {
 	var game models.Game
 
 	query := `SELECT id, name, master_id, description FROM games WHERE id = $1`
@@ -162,7 +166,7 @@ func (r *GameRepository) GetGameByID(gameID int) (*models.Game, error) {
 	return &game, nil
 }
 
-func (r *GameRepository) GetSessionByID(sessionID int) (*models.Session, error) {
+func (r *GameRepository) GetSessionByID(sessionID string) (*models.Session, error) {
 	var session models.Session
 
 	query := `SELECT id, game_id, session_key, summary, created_at, finished_at FROM sessions WHERE id = $1`
@@ -222,7 +226,7 @@ func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 	return games, nil
 }
 
-func (r *GameRepository) GetGamePlayers(gameID int) ([]models.GamePlayer, error) {
+func (r *GameRepository) GetGamePlayers(gameID string) ([]models.GamePlayer, error) {
 	query := `
 		SELECT id, game_id, user_id, character_id
 		FROM game_players 

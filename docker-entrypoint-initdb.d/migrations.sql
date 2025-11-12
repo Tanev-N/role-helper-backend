@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS characters (
     background VARCHAR(100),
     player_name VARCHAR(100),
     experience INTEGER DEFAULT 0 CHECK (experience >= 0),
-    user_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     
     -- Основные характеристики
     strength INTEGER NOT NULL CHECK (strength >= 1 AND strength <= 30),
@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS characters (
 -- Создание таблицы навыков персонажа
 CREATE TABLE IF NOT EXISTS character_skills (
     id SERIAL PRIMARY KEY,
-    character_id SERIAL NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     name VARCHAR(50) NOT NULL,
     modifier INTEGER DEFAULT 0,
     proficient BOOLEAN DEFAULT FALSE,
@@ -82,29 +82,30 @@ CREATE TABLE IF NOT EXISTS character_skills (
 -- Создание таблицы снаряжения персонажа
 CREATE TABLE IF NOT EXISTS character_equipment (
     id SERIAL PRIMARY KEY,
-    character_id SERIAL NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     description TEXT
 );
 
--- Создание таблицы заклинаний персонажа
 CREATE TABLE IF NOT EXISTS character_spells (
     id SERIAL PRIMARY KEY,
-    character_id SERIAL NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
     description TEXT
 );
 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS games (
-    id SERIAL PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
-    master_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    master_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     description VARCHAR(1000)
 );
 
 CREATE TABLE sessions (
-    id SERIAL PRIMARY KEY,
-    game_id SERIAL NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
     session_key VARCHAR(12) UNIQUE NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     finished_at TIMESTAMPTZ,
@@ -113,8 +114,8 @@ CREATE TABLE sessions (
 
 CREATE TABLE game_players (
     id SERIAL PRIMARY KEY,
-    game_id SERIAL NOT NULL REFERENCES games(id) ON DELETE CASCADE,
-    user_id SERIAL NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    character_id SERIAL NOT NULL REFERENCES characters(id),
+    game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    character_id INTEGER NOT NULL REFERENCES characters(id),
     UNIQUE(game_id, user_id)
 );
