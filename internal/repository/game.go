@@ -205,8 +205,7 @@ func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 	query := `
 		SELECT g.id, g.name, g.master_id, g.description
 		FROM games g
-		LEFT JOIN game_players gp ON g.id = gp.game_id AND gp.user_id = $1
-		WHERE g.master_id = $1 OR gp.user_id = $1
+		WHERE g.master_id = $1
 	`
 
 	rows, err := r.db.Query(query, userID)

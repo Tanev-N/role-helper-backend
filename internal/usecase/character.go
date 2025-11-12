@@ -36,13 +36,22 @@ func (c *CharacterUsecase) GetAll(userID int) ([]models.CharacterShort, error) {
 }
 
 func (c *CharacterUsecase) FindByID(id, userID int) (*models.Character, error) {
-	ok, err := c.repo.CheckBelonging(id, userID)
+	// Проверяем, принадлежит ли персонаж пользователю
+	belongs, err := c.repo.CheckBelonging(id, userID)
 	if err != nil {
 		return nil, err
 	}
-	if !ok {
-		return nil, errors.New("character does not belong to user")
+
+	if !belongs {
+		inSameGame, err := c.repo.CheckCharacterInSameGame(id, userID)
+		if err != nil {
+			return nil, err
+		}
+		if !inSameGame {
+			return nil, errors.New("character does not belong to user")
+		}
 	}
+
 	character, err := c.repo.FindByID(id)
 	if err != nil {
 		return nil, err

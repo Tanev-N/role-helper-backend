@@ -104,6 +104,7 @@ type CharacterRepository interface {
 	Update(id int, update *Character) (*Character, error) // Обновление персонажа
 	Delete(id int) error                                  // Удаление персонажа
 	CheckBelonging(id, userID int) (bool, error)
+	CheckCharacterInSameGame(characterID, userID int) (bool, error) // Проверка участия в одной игре
 }
 
 type CharacterService interface {

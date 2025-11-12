@@ -470,3 +470,27 @@ func (cr *CharacterRepository) CheckBelonging(id, userID int) (bool, error) {
 	}
 	return true, nil
 }
+
+func (cr *CharacterRepository) CheckCharacterInSameGame(characterID, userID int) (bool, error) {
+	query := `
+		SELECT EXISTS(
+			SELECT 1
+			FROM game_players gp1
+			INNER JOIN game_players gp2 ON gp1.game_id = gp2.game_id
+			WHERE gp1.character_id = $1
+			AND gp2.user_id = $2
+		) OR EXISTS(
+			SELECT 1
+			FROM games g
+			INNER JOIN game_players gp ON g.id = gp.game_id
+			WHERE gp.character_id = $1
+			AND g.master_id = $2
+		)
+	`
+	var exists bool
+	err := cr.db.QueryRow(query, characterID, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}
