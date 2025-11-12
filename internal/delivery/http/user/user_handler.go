@@ -90,9 +90,7 @@ func (ur *UserRouter) Login(w http.ResponseWriter, r *http.Request) {
 		"username":   user.Username,
 		"avatar_url": user.AvatarURL,
 	}
-	writeSuccessResponse(w, http.StatusOK, map[string]interface{}{
-		"user": respUser,
-	})
+	writeSuccessResponse(w, http.StatusOK, respUser)
 }
 
 func (ur *UserRouter) Logout(w http.ResponseWriter, r *http.Request) {
