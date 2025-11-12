@@ -82,7 +82,7 @@ func (cr *CharacterRepository) GetAll(userID int) ([]models.CharacterShort, erro
 
 func (cr *CharacterRepository) FindByID(id int) (*models.Character, error) {
 	query := `
-		SELECT id, name, race, class, level, alignment, background, player_name, experience,
+		SELECT id, name, race, class, level, alignment, background, player_name, experience, user_id,
 			strength, dexterity, constitution, intelligence, wisdom, charisma,
 			strength_mod, dexterity_mod, constitution_mod, intelligence_mod, wisdom_mod, charisma_mod,
 			proficiency_bonus, initiative, armor_class, speed, hit_points, max_hit_points, temp_hit_points, hit_dice,
@@ -93,7 +93,7 @@ func (cr *CharacterRepository) FindByID(id int) (*models.Character, error) {
 
 	character := &models.Character{}
 	err := cr.db.QueryRow(query, id).Scan(
-		&character.ID, &character.Name, &character.Race, &character.Class, &character.Level, &character.Alignment, &character.Background, &character.PlayerName, &character.Experience,
+		&character.ID, &character.Name, &character.Race, &character.Class, &character.Level, &character.Alignment, &character.Background, &character.PlayerName, &character.Experience, &character.UserID,
 		&character.Strength, &character.Dexterity, &character.Constitution, &character.Intelligence, &character.Wisdom, &character.Charisma,
 		&character.StrengthMod, &character.DexterityMod, &character.ConstitutionMod, &character.IntelligenceMod, &character.WisdomMod, &character.CharismaMod,
 		&character.ProficiencyBonus, &character.Initiative, &character.ArmorClass, &character.Speed, &character.HitPoints, &character.MaxHitPoints, &character.TempHitPoints, &character.HitDice,

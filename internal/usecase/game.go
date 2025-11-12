@@ -55,7 +55,7 @@ func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*mod
 		return nil, errors.New("invalid character id")
 	}
 
-	if character.PlayerName != user.Username {
+	if character.UserID != user.ID {
 		return nil, errors.New("invalid user id for character")
 	}
 
