@@ -3,8 +3,10 @@ package service
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"role-helper/cfg"
+	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func InitPostgres(cfg *cfg.Config) (*sql.DB, error) {
@@ -15,5 +17,19 @@ func InitPostgres(cfg *cfg.Config) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	return db, nil
+
+	backoff := time.Second
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		if err := db.Ping(); err == nil {
+			return db, nil
+		}
+		if time.Now().After(deadline) {
+			return nil, fmt.Errorf("postgres is not reachable within timeout")
+		}
+		time.Sleep(backoff)
+		if backoff < 5*time.Second {
+			backoff *= 2
+		}
+	}
 }
