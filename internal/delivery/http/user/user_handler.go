@@ -55,6 +55,7 @@ func (ur *UserRouter) Register(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
+		Secure:   true,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 	})
@@ -90,6 +91,7 @@ func (ur *UserRouter) Login(w http.ResponseWriter, r *http.Request) {
 		Value:    token,
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
+		Secure:   true,
 		Path:     "/",
 		SameSite: http.SameSiteLaxMode,
 	})
