@@ -23,11 +23,19 @@ func (ur *UserRepository) Create(user *models.User) (*models.User, error) {
 		RETURNING id, username, avatar_url
 	`
 
+	var avatarURL sql.NullString
 	err := ur.db.QueryRow(query, user.Username, user.PasswordHash, user.AvatarURL).Scan(
 		&user.ID,
 		&user.Username,
-		&user.AvatarURL,
+		&avatarURL,
 	)
+	if err == nil {
+		if avatarURL.Valid {
+			user.AvatarURL = avatarURL.String
+		} else {
+			user.AvatarURL = ""
+		}
+	}
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" {
@@ -51,17 +59,23 @@ func (ur *UserRepository) FindByUsername(username string) (*models.User, error) 
 	`
 
 	user := &models.User{}
+	var avatarURL sql.NullString
 	err := ur.db.QueryRow(query, username).Scan(
 		&user.ID,
 		&user.Username,
 		&user.PasswordHash,
-		&user.AvatarURL,
+		&avatarURL,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrUserNotFound
 		}
 		return nil, err
+	}
+	if avatarURL.Valid {
+		user.AvatarURL = avatarURL.String
+	} else {
+		user.AvatarURL = ""
 	}
 
 	return user, nil
@@ -75,17 +89,23 @@ func (ur *UserRepository) FindByID(id int) (*models.User, error) {
 	`
 
 	user := &models.User{}
+	var avatarURL sql.NullString
 	err := ur.db.QueryRow(query, id).Scan(
 		&user.ID,
 		&user.Username,
 		&user.PasswordHash,
-		&user.AvatarURL,
+		&avatarURL,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, models.ErrUserNotFound
 		}
 		return nil, err
+	}
+	if avatarURL.Valid {
+		user.AvatarURL = avatarURL.String
+	} else {
+		user.AvatarURL = ""
 	}
 
 	return user, nil
