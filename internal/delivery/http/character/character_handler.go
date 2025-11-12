@@ -2,16 +2,21 @@ package character
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
-	"log"
+	"errors"
 	"net/http"
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
 
 	var character models.Character
 
@@ -35,7 +40,10 @@ func (cr *CharacterRouter) CreateCharacter(w http.ResponseWriter, r *http.Reques
 
 func (cr *CharacterRouter) GetCharacters(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
-	log.Println(user.ID, user.Username, "getall")
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
 	characters, err := cr.CharacterUsecase.GetAll(user.ID)
 	if err != nil {
 		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось получить список персонажей")
@@ -47,6 +55,10 @@ func (cr *CharacterRouter) GetCharacters(w http.ResponseWriter, r *http.Request)
 
 func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
@@ -65,6 +77,10 @@ func (cr *CharacterRouter) GetCharacter(w http.ResponseWriter, r *http.Request) 
 
 func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 
@@ -93,6 +109,10 @@ func (cr *CharacterRouter) UpdateCharacter(w http.ResponseWriter, r *http.Reques
 
 func (cr *CharacterRouter) DeleteCharacter(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
 

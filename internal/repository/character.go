@@ -340,7 +340,7 @@ func (cr *CharacterRepository) getSkills(characterID int) ([]models.CharacterSki
 }
 
 func (cr *CharacterRepository) saveSkills(characterID int, skills []models.CharacterSkill) error {
-	if len(skills) == 0 {
+	if skills == nil || len(skills) == 0 {
 		return nil
 	}
 
@@ -387,7 +387,7 @@ func (cr *CharacterRepository) getEquipment(characterID int) ([]models.Equipment
 }
 
 func (cr *CharacterRepository) saveEquipment(characterID int, equipment []models.Equipment) error {
-	if len(equipment) == 0 {
+	if equipment == nil || len(equipment) == 0 {
 		return nil
 	}
 
@@ -434,7 +434,7 @@ func (cr *CharacterRepository) getSpells(characterID int) ([]models.Spell, error
 }
 
 func (cr *CharacterRepository) saveSpells(characterID int, spells []models.Spell) error {
-	if len(spells) == 0 {
+	if spells == nil || len(spells) == 0 {
 		return nil
 	}
 

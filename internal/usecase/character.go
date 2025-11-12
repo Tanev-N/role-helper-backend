@@ -20,7 +20,7 @@ func NewCharacterUsecase(repo models.CharacterRepository) models.CharacterServic
 func (c *CharacterUsecase) Create(createReq *models.Character) (*models.Character, error) {
 	utils.AutoCalculateCharacterStats(createReq)
 
-	if len(createReq.Skills) == 0 {
+	if createReq.Skills == nil || len(createReq.Skills) == 0 {
 		createReq.Skills = utils.GetDefaultSkills()
 		utils.AutoCalculateCharacterStats(createReq)
 	}
