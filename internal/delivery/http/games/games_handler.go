@@ -127,7 +127,7 @@ func (gr *GameRouter) EnterSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	player := &models.GamePlayer{
+	player := &models.SessionPlayer{
 		UserID:      user.ID,
 		CharacterID: req.CharacterID,
 	}
@@ -153,6 +153,9 @@ func (gr *GameRouter) EnterSession(w http.ResponseWriter, r *http.Request) {
 		case strings.Contains(err.Error(), "empty session key"):
 			status = http.StatusBadRequest
 			message = "Код сессии не может быть пустым"
+		case strings.Contains(err.Error(), "session is already finished"):
+			status = http.StatusBadRequest
+			message = "Сессия уже завершена"
 		}
 
 		writeErrorResponse(w, status, err, message)
@@ -200,6 +203,29 @@ func (gr *GameRouter) FinishSession(w http.ResponseWriter, r *http.Request) {
 	writeSuccessResponse(w, http.StatusOK, map[string]string{
 		"message": "Сессия завершена",
 	})
+}
+
+func (gr *GameRouter) GetSessionPlayers(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
+
+	vars := mux.Vars(r)
+	sessionID := vars["session_id"]
+	if sessionID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty session_id"), "Некорректный идентификатор сессии")
+		return
+	}
+
+	players, err := gr.GameUsecase.GetSessionPlayers(sessionID)
+	if err != nil {
+		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось получить игроков сессии")
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, players)
 }
 
 func (gr *GameRouter) GetGamePlayers(w http.ResponseWriter, r *http.Request) {

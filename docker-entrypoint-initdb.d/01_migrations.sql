@@ -112,10 +112,10 @@ CREATE TABLE sessions (
     summary TEXT
 );
 
-CREATE TABLE game_players (
+CREATE TABLE session_players (
     id SERIAL PRIMARY KEY,
-    game_id UUID NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+    session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     character_id INTEGER NOT NULL REFERENCES characters(id),
-    UNIQUE(game_id, user_id)
+    UNIQUE(session_id, user_id)
 );

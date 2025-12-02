@@ -20,12 +20,14 @@ type Session struct {
 	FinishedAt *time.Time `json:"finished_at,omitempty"`
 }
 
-type GamePlayer struct {
+type SessionPlayer struct {
 	ID          int    `json:"id"`
-	GameID      string `json:"game_id"`
+	SessionID   string `json:"session_id"`
 	UserID      int    `json:"user_id"`
 	CharacterID int    `json:"character_id"`
 }
+
+type GamePlayer = SessionPlayer
 
 type EnterSession struct {
 	ID          int    `json:"id"`
@@ -40,19 +42,23 @@ type GameRepository interface {
 	CreateSession(session *Session) (*Session, error)
 	GetSessionByKey(sessionKey string) (*Session, error)
 	GetPreviousSessions(gameID string) ([]Session, error)
-	AddPlayerToGame(player *GamePlayer) error
+	AddPlayerToSession(player *SessionPlayer) error
 	FinishSession(id string, summary string) error
 	GetGameByID(gameID string) (*Game, error)
 	GetSessionByID(sessionID string) (*Session, error)
 	GetAllGames(userID int) ([]Game, error)
-	GetGamePlayers(gameID string) ([]GamePlayer, error)
+	GetSessionPlayers(sessionID string) ([]SessionPlayer, error)
+	GetGamePlayers(gameID string) ([]SessionPlayer, error)
 }
 
 type GameService interface {
 	CreateGame(game *Game) (*Game, error)
 	CreateSession(session *Session) (*Session, []Session, error)
-	EnterSession(key string, player *GamePlayer) (*Session, error)
+	EnterSession(key string, player *SessionPlayer) (*Session, error)
 	FinishSession(id string, summary string) error
 	GetAllGames(userID int) ([]Game, error)
-	GetGamePlayers(gameID string) ([]GamePlayer, error)
+	// Новый метод
+	GetSessionPlayers(sessionID string) ([]SessionPlayer, error)
+	// Старый метод для обратной совместимости
+	GetGamePlayers(gameID string) ([]SessionPlayer, error)
 }

@@ -49,7 +49,7 @@ func (r *GameRepository) GetSessionByKey(sessionKey string) (*models.Session, er
 	var session models.Session
 
 	query := `
-		SELECT id, game_id, session_key, summary, created_at 
+		SELECT id, game_id, session_key, summary, created_at, finished_at
 		FROM sessions 
 		WHERE session_key = $1
 	`
@@ -60,6 +60,7 @@ func (r *GameRepository) GetSessionByKey(sessionKey string) (*models.Session, er
 		&session.SessionKey,
 		&session.Summary,
 		&session.CreatedAt,
+		&session.FinishedAt,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -106,27 +107,27 @@ func (r *GameRepository) GetPreviousSessions(gameID string) ([]models.Session, e
 	return sessions, nil
 }
 
-func (r *GameRepository) AddPlayerToGame(player *models.GamePlayer) error {
-	checkQuery := `SELECT id FROM game_players WHERE game_id = $1 AND user_id = $2`
+func (r *GameRepository) AddPlayerToSession(player *models.SessionPlayer) error {
+	checkQuery := `SELECT id FROM session_players WHERE session_id = $1 AND user_id = $2`
 	var existingID int
-	err := r.db.QueryRow(checkQuery, player.GameID, player.UserID).Scan(&existingID)
+	err := r.db.QueryRow(checkQuery, player.SessionID, player.UserID).Scan(&existingID)
 	if err == nil {
 		player.ID = existingID
 		return nil
 	}
 	if err != sql.ErrNoRows {
-		return fmt.Errorf("failed to check player in game: %w", err)
+		return fmt.Errorf("failed to check player in session: %w", err)
 	}
 
 	query := `
-        INSERT INTO game_players (game_id, user_id, character_id) 
+        INSERT INTO session_players (session_id, user_id, character_id) 
         VALUES ($1, $2, $3)
         RETURNING id
     `
 
-	err = r.db.QueryRow(query, player.GameID, player.UserID, player.CharacterID).Scan(&player.ID)
+	err = r.db.QueryRow(query, player.SessionID, player.UserID, player.CharacterID).Scan(&player.ID)
 	if err != nil {
-		return fmt.Errorf("failed to add player to game: %w", err)
+		return fmt.Errorf("failed to add player to session: %w", err)
 	}
 	return nil
 }
@@ -236,11 +237,47 @@ func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 	return games, nil
 }
 
-func (r *GameRepository) GetGamePlayers(gameID string) ([]models.GamePlayer, error) {
+func (r *GameRepository) GetSessionPlayers(sessionID string) ([]models.SessionPlayer, error) {
 	query := `
-		SELECT id, game_id, user_id, character_id
-		FROM game_players 
-		WHERE game_id = $1
+		SELECT id, session_id, user_id, character_id
+		FROM session_players 
+		WHERE session_id = $1
+	`
+
+	rows, err := r.db.Query(query, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query session players: %w", err)
+	}
+	defer rows.Close()
+
+	var players []models.SessionPlayer
+	for rows.Next() {
+		var player models.SessionPlayer
+		err := rows.Scan(
+			&player.ID,
+			&player.SessionID,
+			&player.UserID,
+			&player.CharacterID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan session player: %w", err)
+		}
+		players = append(players, player)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating session players: %w", err)
+	}
+
+	return players, nil
+}
+
+func (r *GameRepository) GetGamePlayers(gameID string) ([]models.SessionPlayer, error) {
+	query := `
+		SELECT sp.id, sp.session_id, sp.user_id, sp.character_id
+		FROM session_players sp
+		JOIN sessions s ON sp.session_id = s.id
+		WHERE s.game_id = $1
 	`
 
 	rows, err := r.db.Query(query, gameID)
@@ -249,12 +286,12 @@ func (r *GameRepository) GetGamePlayers(gameID string) ([]models.GamePlayer, err
 	}
 	defer rows.Close()
 
-	var players []models.GamePlayer
+	var players []models.SessionPlayer
 	for rows.Next() {
-		var player models.GamePlayer
+		var player models.SessionPlayer
 		err := rows.Scan(
 			&player.ID,
-			&player.GameID,
+			&player.SessionID,
 			&player.UserID,
 			&player.CharacterID,
 		)

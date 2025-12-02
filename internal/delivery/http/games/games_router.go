@@ -23,4 +23,5 @@ func (gr *GameRouter) SetupRoutes(router *mux.Router) {
 	gamesRouter.HandleFunc("/sessions/enter", gr.EnterSession).Methods("POST", "OPTIONS")
 	gamesRouter.HandleFunc("/sessions/{session_id}/finish", gr.FinishSession).Methods("POST", "OPTIONS")
 	gamesRouter.HandleFunc("/{game_id}/players", gr.GetGamePlayers).Methods("GET")
+	gamesRouter.HandleFunc("/sessions/{session_id}/players", gr.GetSessionPlayers).Methods("GET")
 }

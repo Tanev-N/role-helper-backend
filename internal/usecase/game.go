@@ -34,7 +34,7 @@ func (uc *GameUseCase) CreateSession(session *models.Session) (*models.Session, 
 	return createdSession, sessions, nil
 }
 
-func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*models.Session, error) {
+func (uc *GameUseCase) EnterSession(key string, player *models.SessionPlayer) (*models.Session, error) {
 	if key == "" {
 		return nil, errors.New("empty session key")
 	}
@@ -67,9 +67,13 @@ func (uc *GameUseCase) EnterSession(key string, player *models.GamePlayer) (*mod
 		return nil, errors.New("session not found")
 	}
 
-	player.GameID = session.GameID
+	if session.FinishedAt != nil {
+		return nil, errors.New("session is already finished")
+	}
 
-	err = uc.game.AddPlayerToGame(player)
+	player.SessionID = session.ID
+
+	err = uc.game.AddPlayerToSession(player)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +101,16 @@ func (uc *GameUseCase) GetAllGames(userID int) ([]models.Game, error) {
 	return games, nil
 }
 
-func (uc *GameUseCase) GetGamePlayers(id string) ([]models.GamePlayer, error) {
-	players, err := uc.game.GetGamePlayers(id)
+func (uc *GameUseCase) GetSessionPlayers(sessionID string) ([]models.SessionPlayer, error) {
+	players, err := uc.game.GetSessionPlayers(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	return players, nil
+}
+
+func (uc *GameUseCase) GetGamePlayers(gameID string) ([]models.SessionPlayer, error) {
+	players, err := uc.game.GetGamePlayers(gameID)
 	if err != nil {
 		return nil, err
 	}
