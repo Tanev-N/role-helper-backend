@@ -13,7 +13,6 @@ const (
 	MaxLevel        = 20
 )
 
-
 func ValidateCharacter(c models.Character) error {
 	if strings.TrimSpace(c.Name) == "" {
 		return fmt.Errorf("имя не может быть пустым")

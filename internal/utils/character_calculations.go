@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-
 func CalculateAbilityModifier(abilityScore int) int {
 	return int(math.Floor(float64(abilityScore-10) / 2))
 }
@@ -16,27 +15,24 @@ func CalculateProficiencyBonus(level int) int {
 	return 2 + (level-1)/4
 }
 
-
 func CalculateInitiative(dexterityMod int) int {
 	return dexterityMod
 }
-
 
 func CalculateArmorClass(dexterityMod int, armorBonus int) int {
 	return 10 + dexterityMod + armorBonus
 }
 
-
-func CalculateHitPoints(level int, hitDie int, constitutionMod int) int {	
+func CalculateHitPoints(level int, hitDie int, constitutionMod int) int {
 	firstLevelHP := hitDie + constitutionMod
-	
+
 	averageHitDie := (hitDie + 1) / 2
 	if (hitDie+1)%2 != 0 {
-		averageHitDie++ 
+		averageHitDie++
 	}
 	additionalHP := averageHitDie + constitutionMod
-	
-	return firstLevelHP + (additionalHP * (level - 1))	
+
+	return firstLevelHP + (additionalHP * (level - 1))
 }
 
 func CalculateSkillModifier(abilityMod int, proficient bool, proficiencyBonus int) int {
@@ -60,21 +56,21 @@ func AutoCalculateCharacterStats(character *models.Character) {
 	character.IntelligenceMod = CalculateAbilityModifier(character.Intelligence)
 	character.WisdomMod = CalculateAbilityModifier(character.Wisdom)
 	character.CharismaMod = CalculateAbilityModifier(character.Charisma)
-	
+
 	if character.ProficiencyBonus == 0 {
 		character.ProficiencyBonus = CalculateProficiencyBonus(character.Level)
 	}
-	
+
 	if character.Initiative == 0 {
 		character.Initiative = CalculateInitiative(character.DexterityMod)
 	}
-	
+
 	if character.MaxHitPoints == 0 {
 		hitDie := parseHitDice(character.HitDice)
 		character.MaxHitPoints = CalculateHitPoints(character.Level, hitDie, character.ConstitutionMod)
 		character.HitPoints = character.MaxHitPoints
 	}
-	
+
 	for i := range character.Skills {
 		if character.Skills[i].Modifier == 0 {
 			abilityMod := getAbilityModifierForSkill(character.Skills[i].Ability, character)
@@ -83,22 +79,21 @@ func AutoCalculateCharacterStats(character *models.Character) {
 	}
 }
 
-
 func parseHitDice(hitDice string) int {
 	if hitDice == "" || !strings.Contains(hitDice, "d") {
-		return 8 
+		return 8
 	}
-	
+
 	parts := strings.Split(hitDice, "d")
 	if len(parts) != 2 {
 		return 8
 	}
-	
+
 	if dieSize, err := strconv.Atoi(parts[1]); err == nil {
 		return dieSize
 	}
-	
-	return 8 
+
+	return 8
 }
 
 func getAbilityModifierForSkill(ability string, character *models.Character) int {
