@@ -98,8 +98,17 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
                             SwaggerUIBundle.presets.standalone
                         ],
                         requestInterceptor: (request) => {
+                            if (!request.url.startsWith('http')) {
+                                request.url = protocol + '//' + host + request.url;
+                            }
+                            request.credentials = 'include';
                             return request;
-                        }
+                        },
+                        responseInterceptor: (response) => {
+                            return response;
+                        },
+                        validatorUrl: null,
+                        tryItOutEnabled: true
                     });
                 }
             </script>
