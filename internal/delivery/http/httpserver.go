@@ -87,9 +87,19 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
             <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
             <script>
                 window.onload = function() {
+                    const protocol = window.location.protocol;
+                    const host = window.location.host;
+                    const openapiUrl = protocol + '//' + host + '/openapi.yaml';
                     window.ui = SwaggerUIBundle({
-                        url: 'http://critical-roll.ru:8080/openapi.yaml',
-                        dom_id: '#swagger-ui'
+                        url: openapiUrl,
+                        dom_id: '#swagger-ui',
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIBundle.presets.standalone
+                        ],
+                        requestInterceptor: (request) => {
+                            return request;
+                        }
                     });
                 }
             </script>

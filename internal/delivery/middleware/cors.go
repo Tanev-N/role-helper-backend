@@ -4,8 +4,11 @@ import "net/http"
 
 func CORS(next http.Handler) http.Handler {
 	allowedOrigins := map[string]struct{}{
-		"https://critical-roll.ru": {},
-		"http://localhost:8081":    {},
+		"https://critical-roll.ru":     {},
+		"http://critical-roll.ru":      {},
+		"http://critical-roll.ru:8080": {},
+		"http://localhost:8080":        {},
+		"http://localhost:8081":        {},
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
