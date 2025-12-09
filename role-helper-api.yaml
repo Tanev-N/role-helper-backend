@@ -1225,9 +1225,6 @@ components:
         photo:
           type: string
           example: "https://example.com/armor.jpg"
-        photo:
-          type: string
-          example: "https://example.com/armor.jpg"
 
     ArmorUpdate:
       type: object
