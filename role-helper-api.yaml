@@ -41,7 +41,8 @@ info:
     }
     ```
 servers:
-  - url: http://critical-roll.ru:8080
+  - url: https://critical-roll.ru
+  - url: http://critical-roll.ru
 tags:
   - name: games
     description: Управление играми, сессиями и игроками

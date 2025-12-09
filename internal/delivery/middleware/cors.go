@@ -9,6 +9,7 @@ func CORS(next http.Handler) http.Handler {
 		"http://critical-roll.ru:8080": {},
 		"http://localhost:8080":        {},
 		"http://localhost:8081":        {},
+		"http://localhost":             {},
 	}
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
