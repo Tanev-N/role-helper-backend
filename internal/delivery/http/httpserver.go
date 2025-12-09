@@ -67,5 +67,46 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 	userRout := user.NewUserRouter(uu)
 	userRout.SetupRoutes(router)
 
+	router.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "openapi.yaml")
+	})
+
+	router.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>DnD Characters API</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui.css">
+            <style>
+                body { margin: 0; }
+                #swagger-ui { padding: 20px; }
+                .swagger-ui .topbar { display: none; }
+            </style>
+        </head>
+        <body>
+            <div id="swagger-ui"></div>
+            <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+            <script>
+                window.onload = function() {
+                    window.ui = SwaggerUIBundle({
+                        url: '/api/openapi.yaml',
+                        dom_id: '#swagger-ui',
+                        presets: [
+                            SwaggerUIBundle.presets.apis,
+                            SwaggerUIStandalonePreset
+                        ],
+                        layout: "StandaloneLayout",
+                        deepLinking: true,
+                        showExtensions: true,
+                        showCommonExtensions: true
+                    });
+                }
+            </script>
+        </body>
+        </html>`))
+	})
+
 	return router
 }
