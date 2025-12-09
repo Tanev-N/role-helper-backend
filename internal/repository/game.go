@@ -16,9 +16,9 @@ func NewGameRepository(db *sql.DB) models.GameRepository {
 }
 
 func (r *GameRepository) CreateGame(game *models.Game) (*models.Game, error) {
-	query := `INSERT INTO games (name, master_id, description) VALUES ($1, $2, $3) RETURNING id`
+	query := `INSERT INTO games (name, master_id, description, photo) VALUES ($1, $2, $3, $4) RETURNING id`
 
-	err := r.db.QueryRow(query, game.Name, game.MasterID, game.Description).Scan(&game.ID)
+	err := r.db.QueryRow(query, game.Name, game.MasterID, game.Description, game.Photo).Scan(&game.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create game: %w", err)
 	}
@@ -159,13 +159,14 @@ func (r *GameRepository) FinishSession(id string, summary string) error {
 func (r *GameRepository) GetGameByID(gameID string) (*models.Game, error) {
 	var game models.Game
 
-	query := `SELECT id, name, master_id, description FROM games WHERE id = $1`
+	query := `SELECT id, name, master_id, description, photo FROM games WHERE id = $1`
 
 	err := r.db.QueryRow(query, gameID).Scan(
 		&game.ID,
 		&game.Name,
 		&game.MasterID,
 		&game.Description,
+		&game.Photo,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -204,7 +205,7 @@ func (r *GameRepository) GetSessionByID(sessionID string) (*models.Session, erro
 
 func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 	query := `
-		SELECT g.id, g.name, g.master_id, g.description
+		SELECT g.id, g.name, g.master_id, g.description, g.photo
 		FROM games g
 		WHERE g.master_id = $1
 	`
@@ -223,6 +224,7 @@ func (r *GameRepository) GetAllGames(userID int) ([]models.Game, error) {
 			&game.Name,
 			&game.MasterID,
 			&game.Description,
+			&game.Photo,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan game: %w", err)

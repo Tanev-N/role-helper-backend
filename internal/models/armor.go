@@ -19,6 +19,7 @@ type Armor struct {
 	UniqueStats         string `json:"unique_stats"`         // Уникальные показатели ("Нет" или текст)
 	Charges             string `json:"charges"`              // Заряд ("Нет" или число)
 	Modifiers           string `json:"modifiers"`            // Дополнительные модификаторы (JSON строка или текст)
+	Photo               string `json:"photo"`                // URL фотографии брони
 }
 
 type ArmorRepository interface {

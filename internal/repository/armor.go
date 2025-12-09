@@ -19,16 +19,16 @@ func (ar *ArmorRepository) Create(armor *models.Armor) (*models.Armor, error) {
 	query := `
 		INSERT INTO armor (
 			user_id, name, type, armor_class, modifier, cost, rarity,
-			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers
+			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers, photo
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+			$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
 		)
 		RETURNING id
 	`
 
 	err := ar.db.QueryRow(query,
 		armor.UserID, armor.Name, armor.Type, armor.ArmorClass, armor.Modifier, armor.Cost, armor.Rarity,
-		armor.StealthDisadvantage, armor.StrengthRequirement, armor.Weight, armor.UniqueStats, armor.Charges, armor.Modifiers,
+		armor.StealthDisadvantage, armor.StrengthRequirement, armor.Weight, armor.UniqueStats, armor.Charges, armor.Modifiers, armor.Photo,
 	).Scan(&armor.ID)
 
 	if err != nil {
@@ -41,7 +41,7 @@ func (ar *ArmorRepository) Create(armor *models.Armor) (*models.Armor, error) {
 func (ar *ArmorRepository) GetAll(userID int) ([]models.Armor, error) {
 	query := `
 		SELECT id, user_id, name, type, armor_class, modifier, cost, rarity,
-			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers
+			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers, photo
 		FROM armor
 		WHERE user_id = $1
 		ORDER BY name
@@ -59,7 +59,7 @@ func (ar *ArmorRepository) GetAll(userID int) ([]models.Armor, error) {
 		err := rows.Scan(
 			&armor.ID, &armor.UserID, &armor.Name, &armor.Type, &armor.ArmorClass, &armor.Modifier,
 			&armor.Cost, &armor.Rarity, &armor.StealthDisadvantage, &armor.StrengthRequirement,
-			&armor.Weight, &armor.UniqueStats, &armor.Charges, &armor.Modifiers,
+			&armor.Weight, &armor.UniqueStats, &armor.Charges, &armor.Modifiers, &armor.Photo,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan armor: %w", err)
@@ -77,7 +77,7 @@ func (ar *ArmorRepository) GetAll(userID int) ([]models.Armor, error) {
 func (ar *ArmorRepository) GetByID(id, userID int) (*models.Armor, error) {
 	query := `
 		SELECT id, user_id, name, type, armor_class, modifier, cost, rarity,
-			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers
+			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers, photo
 		FROM armor
 		WHERE id = $1 AND user_id = $2
 	`
@@ -86,7 +86,7 @@ func (ar *ArmorRepository) GetByID(id, userID int) (*models.Armor, error) {
 	err := ar.db.QueryRow(query, id, userID).Scan(
 		&armor.ID, &armor.UserID, &armor.Name, &armor.Type, &armor.ArmorClass, &armor.Modifier,
 		&armor.Cost, &armor.Rarity, &armor.StealthDisadvantage, &armor.StrengthRequirement,
-		&armor.Weight, &armor.UniqueStats, &armor.Charges, &armor.Modifiers,
+		&armor.Weight, &armor.UniqueStats, &armor.Charges, &armor.Modifiers, &armor.Photo,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {
@@ -104,22 +104,22 @@ func (ar *ArmorRepository) Update(id int, armor *models.Armor) (*models.Armor, e
 		UPDATE armor SET
 			name = $2, type = $3, armor_class = $4, modifier = $5, cost = $6, rarity = $7,
 			stealth_disadvantage = $8, strength_requirement = $9, weight = $10,
-			unique_stats = $11, charges = $12, modifiers = $13
+			unique_stats = $11, charges = $12, modifiers = $13, photo = $14
 		WHERE id = $1
 		RETURNING id, user_id, name, type, armor_class, modifier, cost, rarity,
-			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers
+			stealth_disadvantage, strength_requirement, weight, unique_stats, charges, modifiers, photo
 	`
 
 	updatedArmor := &models.Armor{}
 	err := ar.db.QueryRow(query, id,
 		armor.Name, armor.Type, armor.ArmorClass, armor.Modifier, armor.Cost, armor.Rarity,
 		armor.StealthDisadvantage, armor.StrengthRequirement, armor.Weight,
-		armor.UniqueStats, armor.Charges, armor.Modifiers,
+		armor.UniqueStats, armor.Charges, armor.Modifiers, armor.Photo,
 	).Scan(
 		&updatedArmor.ID, &updatedArmor.UserID, &updatedArmor.Name, &updatedArmor.Type,
 		&updatedArmor.ArmorClass, &updatedArmor.Modifier, &updatedArmor.Cost, &updatedArmor.Rarity,
 		&updatedArmor.StealthDisadvantage, &updatedArmor.StrengthRequirement, &updatedArmor.Weight,
-		&updatedArmor.UniqueStats, &updatedArmor.Charges, &updatedArmor.Modifiers,
+		&updatedArmor.UniqueStats, &updatedArmor.Charges, &updatedArmor.Modifiers, &updatedArmor.Photo,
 	)
 
 	if errors.Is(err, sql.ErrNoRows) {

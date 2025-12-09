@@ -100,7 +100,8 @@ CREATE TABLE IF NOT EXISTS games (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     master_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    description VARCHAR(1000)
+    description VARCHAR(1000),
+    photo VARCHAR(255)
 );
 
 CREATE TABLE sessions (
@@ -135,7 +136,28 @@ CREATE TABLE IF NOT EXISTS armor (
     unique_stats TEXT,
     charges VARCHAR(50),
     modifiers TEXT,
+    photo VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 ALTER TABLE characters ADD COLUMN IF NOT EXISTS armor_id INTEGER REFERENCES armor(id) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS weapons (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(100),
+    damage VARCHAR(50),
+    modifier VARCHAR(50),
+    cost VARCHAR(100),
+    rarity VARCHAR(50),
+    grip VARCHAR(50),
+    range_meters VARCHAR(50),
+    weight VARCHAR(50),
+    unique_stats TEXT,
+    charges VARCHAR(50),
+    photo VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS weapon_id INTEGER REFERENCES weapons(id) ON DELETE SET NULL;

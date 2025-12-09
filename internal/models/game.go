@@ -9,6 +9,7 @@ type Game struct {
 	Name        string `json:"name"`
 	MasterID    int    `json:"master_id"`
 	Description string `json:"description"`
+	Photo       string `json:"photo"`
 }
 
 type Session struct {

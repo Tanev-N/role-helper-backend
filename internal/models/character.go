@@ -71,8 +71,9 @@ type Character struct {
 	// Особенности и черты класса/расы
 	Features string `json:"features"` // Особенности персонажа
 
-	Photo   string `json:"photo"`    // URL фотографии персонажа
-	ArmorID *int   `json:"armor_id"` // ID выбранной брони (опционально)
+	Photo    string `json:"photo"`     // URL фотографии персонажа
+	ArmorID  *int   `json:"armor_id"`  // ID выбранной брони (опционально)
+	WeaponID *int   `json:"weapon_id"` // ID выбранного оружия (опционально)
 }
 
 type CharacterSkill struct {

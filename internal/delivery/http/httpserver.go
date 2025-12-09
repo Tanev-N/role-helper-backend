@@ -9,6 +9,7 @@ import (
 	"role-helper/internal/delivery/http/character"
 	games "role-helper/internal/delivery/http/games"
 	"role-helper/internal/delivery/http/user"
+	"role-helper/internal/delivery/http/weapon"
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/repository"
 	"role-helper/internal/usecase"
@@ -55,6 +56,9 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 
 	ar := repository.NewArmorRepository(db)
 	au := usecase.NewArmorUsecase(ar)
+
+	wr := repository.NewWeaponRepository(db)
+	wu := usecase.NewWeaponUsecase(wr)
 
 	router := mux.NewRouter()
 
@@ -107,6 +111,9 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 
 	armorRout := armor.NewArmorRouter(au)
 	armorRout.SetupArmorRoutes(api)
+
+	weaponRout := weapon.NewWeaponRouter(wu)
+	weaponRout.SetupWeaponRoutes(api)
 
 	return router
 }

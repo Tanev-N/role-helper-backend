@@ -49,6 +49,8 @@ tags:
     description: Работа с персонажами DnD
   - name: armor
     description: Управление бронёй пользователя
+  - name: weapon
+    description: Управление оружием пользователя
   - name: auth
     description: Аутентификация и регистрация пользователей
 
@@ -238,6 +240,99 @@ paths:
           description: Броня удалена
         "404":
           description: Броня не найдена
+
+  /api/weapon:
+    post:
+      tags: [weapon]
+      summary: Создание нового оружия
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeaponCreate"
+      responses:
+        "201":
+          description: Оружие успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Weapon"
+        "400":
+          description: Ошибка валидации
+    get:
+      tags: [weapon]
+      summary: Получение списка всего оружия пользователя
+      responses:
+        "200":
+          description: Список оружия
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Weapon"
+
+  /api/weapon/{id}:
+    get:
+      tags: [weapon]
+      summary: Получение оружия по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID оружия
+      responses:
+        "200":
+          description: Оружие найдено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Weapon"
+        "404":
+          description: Оружие не найдено
+    put:
+      tags: [weapon]
+      summary: Обновление оружия
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID оружия
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeaponUpdate"
+      responses:
+        "200":
+          description: Оружие обновлено
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Weapon"
+        "404":
+          description: Оружие не найдено
+    delete:
+      tags: [weapon]
+      summary: Удаление оружия
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID оружия
+      responses:
+        "204":
+          description: Оружие удалено
+        "404":
+          description: Оружие не найдено
 
   /api/auth/register:
     post:
@@ -557,6 +652,11 @@ components:
           nullable: true
           example: 1
           description: ID выбранной брони (опционально)
+        weapon_id:
+          type: integer
+          nullable: true
+          example: 1
+          description: ID выбранного оружия (опционально)
     CreateGameRequest:
       type: object
       required:
@@ -570,6 +670,10 @@ components:
           type: string
           example: "Описание"
           description: Описание игры (необязательное поле)
+        photo:
+          type: string
+          example: "https://example.com/game.jpg"
+          description: URL фотографии игры (необязательное поле)
     CharacterCreate:
       type: object
       required:
@@ -712,6 +816,11 @@ components:
           nullable: true
           example: 1
           description: ID выбранной брони (опционально)
+        weapon_id:
+          type: integer
+          nullable: true
+          example: 1
+          description: ID выбранного оружия (опционально)
 
     CharacterUpdate:
       type: object
@@ -816,6 +925,10 @@ components:
           type: integer
           nullable: true
           description: ID выбранной брони (опционально)
+        weapon_id:
+          type: integer
+          nullable: true
+          description: ID выбранного оружия (опционально)
 
     CharacterShort:
       type: object
@@ -920,6 +1033,9 @@ components:
         description:
           type: string
           example: "Описание игры"
+        photo:
+          type: string
+          example: "https://example.com/game.jpg"
 
     Session:
       type: object
@@ -1061,6 +1177,9 @@ components:
         modifiers:
           type: string
           example: ""
+        photo:
+          type: string
+          example: "https://example.com/armor.jpg"
 
     ArmorCreate:
       type: object
@@ -1103,6 +1222,12 @@ components:
         modifiers:
           type: string
           example: ""
+        photo:
+          type: string
+          example: "https://example.com/armor.jpg"
+        photo:
+          type: string
+          example: "https://example.com/armor.jpg"
 
     ArmorUpdate:
       type: object
@@ -1144,4 +1269,136 @@ components:
         modifiers:
           type: string
           example: ""
+        photo:
+          type: string
+          example: "https://example.com/armor.jpg"
+
+    Weapon:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Боевая коса"
+        type:
+          type: string
+          example: "простое рукопашное"
+        damage:
+          type: string
+          example: "1к8"
+        modifier:
+          type: string
+          example: "Сила"
+        cost:
+          type: string
+          example: "30 золотых"
+        rarity:
+          type: string
+          example: "Обычная"
+        grip:
+          type: string
+          example: "Двуручное"
+        range_meters:
+          type: string
+          example: "2.5"
+        weight:
+          type: string
+          example: "5"
+        unique_stats:
+          type: string
+          example: "Нет"
+        charges:
+          type: string
+          example: "Нет"
+        photo:
+          type: string
+          example: "https://example.com/weapon.jpg"
+
+    WeaponCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Боевая коса"
+        type:
+          type: string
+          example: "простое рукопашное"
+        damage:
+          type: string
+          example: "1к8"
+        modifier:
+          type: string
+          example: "Сила"
+        cost:
+          type: string
+          example: "30 золотых"
+        rarity:
+          type: string
+          example: "Обычная"
+        grip:
+          type: string
+          example: "Двуручное"
+        range_meters:
+          type: string
+          example: "2.5"
+        weight:
+          type: string
+          example: "5"
+        unique_stats:
+          type: string
+          example: "Нет"
+        charges:
+          type: string
+          example: "Нет"
+        photo:
+          type: string
+          example: "https://example.com/weapon.jpg"
+
+    WeaponUpdate:
+      type: object
+      description: Поля, которые можно обновить
+      properties:
+        name:
+          type: string
+          example: "Боевая коса"
+        type:
+          type: string
+          example: "простое рукопашное"
+        damage:
+          type: string
+          example: "1к8"
+        modifier:
+          type: string
+          example: "Сила"
+        cost:
+          type: string
+          example: "30 золотых"
+        rarity:
+          type: string
+          example: "Обычная"
+        grip:
+          type: string
+          example: "Двуручное"
+        range_meters:
+          type: string
+          example: "2.5"
+        weight:
+          type: string
+          example: "5"
+        unique_stats:
+          type: string
+          example: "Нет"
+        charges:
+          type: string
+          example: "Нет"
+        photo:
+          type: string
+          example: "https://example.com/weapon.jpg"
 
