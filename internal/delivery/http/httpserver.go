@@ -62,11 +62,13 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
+	openapiHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/x-yaml")
 		http.ServeFile(w, r, "role-helper-api.yaml")
 	})
+	router.Path("/openapi.yaml").Handler(middleware.CORS(openapiHandler)).Methods("GET", "OPTIONS")
 
-	router.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
+	docsHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(`
         <!DOCTYPE html>
@@ -94,6 +96,7 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
         </body>
         </html>`))
 	})
+	router.Path("/docs").Handler(middleware.CORS(docsHandler)).Methods("GET", "OPTIONS")
 
 	api := router.PathPrefix("/api").Subrouter()
 
