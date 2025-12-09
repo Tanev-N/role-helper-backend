@@ -53,19 +53,6 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 	gu := usecase.NewGameUseCase(gameRepo, ur, cr)
 
 	router := mux.NewRouter()
-	router = router.PathPrefix("/api").Subrouter()
-
-	router.Use(middleware.CORS)
-	router.Use(middleware.Auth(uu))
-
-	characterRout := character.NewCharacterRouter(cu)
-	characterRout.SetupCharacterRoutes(router)
-
-	gameRout := games.NewGameRouter(gu)
-	gameRout.SetupRoutes(router)
-
-	userRout := user.NewUserRouter(uu)
-	userRout.SetupRoutes(router)
 
 	router.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "openapi.yaml")
@@ -107,6 +94,20 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
         </body>
         </html>`))
 	})
+
+	router = router.PathPrefix("/api").Subrouter()
+
+	router.Use(middleware.CORS)
+	router.Use(middleware.Auth(uu))
+
+	characterRout := character.NewCharacterRouter(cu)
+	characterRout.SetupCharacterRoutes(router)
+
+	gameRout := games.NewGameRouter(gu)
+	gameRout.SetupRoutes(router)
+
+	userRout := user.NewUserRouter(uu)
+	userRout.SetupRoutes(router)
 
 	return router
 }
