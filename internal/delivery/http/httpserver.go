@@ -55,7 +55,7 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/openapi.yaml", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "openapi.yaml")
+		http.ServeFile(w, r, "role-helper-api.yaml")
 	})
 
 	router.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
@@ -78,7 +78,7 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
             <script>
                 window.onload = function() {
                     window.ui = SwaggerUIBundle({
-                        url: '/api/openapi.yaml',
+                        url: '/openapi.yaml',
                         dom_id: '#swagger-ui',
                         presets: [
                             SwaggerUIBundle.presets.apis,
