@@ -21,14 +21,14 @@ func (cr *CharacterRepository) Create(character *models.Character) (*models.Char
 			strength_mod, dexterity_mod, constitution_mod, intelligence_mod, wisdom_mod, charisma_mod,
 			proficiency_bonus, initiative, armor_class, speed, hit_points, max_hit_points, temp_hit_points, hit_dice,
 			strength_save, dexterity_save, constitution_save, intelligence_save, wisdom_save, charisma_save,
-			personality_traits, ideals, bonds, flaws, proficiencies, languages, senses, features, photo, user_id
+			personality_traits, ideals, bonds, flaws, proficiencies, languages, senses, features, photo, user_id, armor_id
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8, $9,
 			$10, $11, $12, $13, $14, $15,
 			$16, $17, $18, $19, $20, $21,
 			$22, $23, $24, $25, $26, $27, $28, $29,
 			$30, $31, $32, $33, $34, $35,
-			$36, $37, $38, $39, $40, $41, $42, $43, $44
+			$36, $37, $38, $39, $40, $41, $42, $43, $44, $45
 		)
 		RETURNING id
 	`
@@ -39,7 +39,7 @@ func (cr *CharacterRepository) Create(character *models.Character) (*models.Char
 		character.StrengthMod, character.DexterityMod, character.ConstitutionMod, character.IntelligenceMod, character.WisdomMod, character.CharismaMod,
 		character.ProficiencyBonus, character.Initiative, character.ArmorClass, character.Speed, character.HitPoints, character.MaxHitPoints, character.TempHitPoints, character.HitDice,
 		character.StrengthSave, character.DexteritySave, character.ConstitutionSave, character.IntelligenceSave, character.WisdomSave, character.CharismaSave,
-		character.PersonalityTraits, character.Ideals, character.Bonds, character.Flaws, character.Proficiencies, character.Languages, character.Senses, character.Features, character.Photo, character.UserID,
+		character.PersonalityTraits, character.Ideals, character.Bonds, character.Flaws, character.Proficiencies, character.Languages, character.Senses, character.Features, character.Photo, character.UserID, character.ArmorID,
 	).Scan(&character.ID)
 
 	if err != nil {
@@ -87,7 +87,7 @@ func (cr *CharacterRepository) FindByID(id int) (*models.Character, error) {
 			strength_mod, dexterity_mod, constitution_mod, intelligence_mod, wisdom_mod, charisma_mod,
 			proficiency_bonus, initiative, armor_class, speed, hit_points, max_hit_points, temp_hit_points, hit_dice,
 			strength_save, dexterity_save, constitution_save, intelligence_save, wisdom_save, charisma_save,
-			personality_traits, ideals, bonds, flaws, proficiencies, languages, senses, features, photo
+			personality_traits, ideals, bonds, flaws, proficiencies, languages, senses, features, photo, armor_id
 		FROM characters WHERE id = $1
 	`
 
@@ -98,7 +98,7 @@ func (cr *CharacterRepository) FindByID(id int) (*models.Character, error) {
 		&character.StrengthMod, &character.DexterityMod, &character.ConstitutionMod, &character.IntelligenceMod, &character.WisdomMod, &character.CharismaMod,
 		&character.ProficiencyBonus, &character.Initiative, &character.ArmorClass, &character.Speed, &character.HitPoints, &character.MaxHitPoints, &character.TempHitPoints, &character.HitDice,
 		&character.StrengthSave, &character.DexteritySave, &character.ConstitutionSave, &character.IntelligenceSave, &character.WisdomSave, &character.CharismaSave,
-		&character.PersonalityTraits, &character.Ideals, &character.Bonds, &character.Flaws, &character.Proficiencies, &character.Languages, &character.Senses, &character.Features, &character.Photo,
+		&character.PersonalityTraits, &character.Ideals, &character.Bonds, &character.Flaws, &character.Proficiencies, &character.Languages, &character.Senses, &character.Features, &character.Photo, &character.ArmorID,
 	)
 
 	if err != nil {
@@ -245,6 +245,9 @@ func (cr *CharacterRepository) Update(id int, update *models.Character) (*models
 	if update.Photo != "" {
 		existing.Photo = update.Photo
 	}
+	if update.ArmorID != nil {
+		existing.ArmorID = update.ArmorID
+	}
 
 	if update.Skills != nil {
 		existing.Skills = update.Skills
@@ -263,7 +266,7 @@ func (cr *CharacterRepository) Update(id int, update *models.Character) (*models
 			strength_mod = $16, dexterity_mod = $17, constitution_mod = $18, intelligence_mod = $19, wisdom_mod = $20, charisma_mod = $21,
 			proficiency_bonus = $22, initiative = $23, armor_class = $24, speed = $25, hit_points = $26, max_hit_points = $27, temp_hit_points = $28, hit_dice = $29,
 			strength_save = $30, dexterity_save = $31, constitution_save = $32, intelligence_save = $33, wisdom_save = $34, charisma_save = $35,
-			personality_traits = $36, ideals = $37, bonds = $38, flaws = $39, proficiencies = $40, languages = $41, senses = $42, features = $43, photo = $44
+			personality_traits = $36, ideals = $37, bonds = $38, flaws = $39, proficiencies = $40, languages = $41, senses = $42, features = $43, photo = $44, armor_id = $45
 		WHERE id = $1
 	`
 
@@ -273,7 +276,7 @@ func (cr *CharacterRepository) Update(id int, update *models.Character) (*models
 		existing.StrengthMod, existing.DexterityMod, existing.ConstitutionMod, existing.IntelligenceMod, existing.WisdomMod, existing.CharismaMod,
 		existing.ProficiencyBonus, existing.Initiative, existing.ArmorClass, existing.Speed, existing.HitPoints, existing.MaxHitPoints, existing.TempHitPoints, existing.HitDice,
 		existing.StrengthSave, existing.DexteritySave, existing.ConstitutionSave, existing.IntelligenceSave, existing.WisdomSave, existing.CharismaSave,
-		existing.PersonalityTraits, existing.Ideals, existing.Bonds, existing.Flaws, existing.Proficiencies, existing.Languages, existing.Senses, existing.Features, existing.Photo,
+		existing.PersonalityTraits, existing.Ideals, existing.Bonds, existing.Flaws, existing.Proficiencies, existing.Languages, existing.Senses, existing.Features, existing.Photo, existing.ArmorID,
 	)
 
 	if err != nil {
@@ -475,15 +478,21 @@ func (cr *CharacterRepository) CheckCharacterInSameGame(characterID, userID int)
 	query := `
 		SELECT EXISTS(
 			SELECT 1
-			FROM game_players gp1
-			INNER JOIN game_players gp2 ON gp1.game_id = gp2.game_id
-			WHERE gp1.character_id = $1
-			AND gp2.user_id = $2
+			FROM session_players sp1
+			INNER JOIN sessions s1 ON sp1.session_id = s1.id
+			INNER JOIN session_players sp2 ON s1.game_id = (
+				SELECT game_id FROM sessions WHERE id = sp2.session_id
+			)
+			INNER JOIN sessions s2 ON sp2.session_id = s2.id
+			WHERE sp1.character_id = $1
+			AND sp2.user_id = $2
+			AND s1.game_id = s2.game_id
 		) OR EXISTS(
 			SELECT 1
 			FROM games g
-			INNER JOIN game_players gp ON g.id = gp.game_id
-			WHERE gp.character_id = $1
+			INNER JOIN sessions s ON g.id = s.game_id
+			INNER JOIN session_players sp ON s.id = sp.session_id
+			WHERE sp.character_id = $1
 			AND g.master_id = $2
 		)
 	`

@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"role-helper/cfg"
+	"role-helper/internal/delivery/http/armor"
 	"role-helper/internal/delivery/http/character"
 	games "role-helper/internal/delivery/http/games"
 	"role-helper/internal/delivery/http/user"
@@ -51,6 +52,9 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 		log.Fatalf("unexpected type for game repository: %T", gameRepoInterface)
 	}
 	gu := usecase.NewGameUseCase(gameRepo, ur, cr)
+
+	ar := repository.NewArmorRepository(db)
+	au := usecase.NewArmorUsecase(ar)
 
 	router := mux.NewRouter()
 
@@ -100,6 +104,9 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 
 	userRout := user.NewUserRouter(uu)
 	userRout.SetupRoutes(api)
+
+	armorRout := armor.NewArmorRouter(au)
+	armorRout.SetupArmorRoutes(api)
 
 	return router
 }

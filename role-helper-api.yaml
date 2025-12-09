@@ -47,6 +47,8 @@ tags:
     description: Управление играми, сессиями и игроками
   - name: characters
     description: Работа с персонажами DnD
+  - name: armor
+    description: Управление бронёй пользователя
   - name: auth
     description: Аутентификация и регистрация пользователей
 
@@ -143,6 +145,99 @@ paths:
           description: Персонаж удалён
         "404":
           description: Персонаж не найден
+
+  /api/armor:
+    post:
+      tags: [armor]
+      summary: Создание новой брони
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArmorCreate"
+      responses:
+        "201":
+          description: Броня успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Armor"
+        "400":
+          description: Ошибка валидации
+    get:
+      tags: [armor]
+      summary: Получение списка всей брони пользователя
+      responses:
+        "200":
+          description: Список брони
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Armor"
+
+  /api/armor/{id}:
+    get:
+      tags: [armor]
+      summary: Получение брони по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID брони
+      responses:
+        "200":
+          description: Броня найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Armor"
+        "404":
+          description: Броня не найдена
+    put:
+      tags: [armor]
+      summary: Обновление брони
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID брони
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArmorUpdate"
+      responses:
+        "200":
+          description: Броня обновлена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Armor"
+        "404":
+          description: Броня не найдена
+    delete:
+      tags: [armor]
+      summary: Удаление брони
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: ID брони
+      responses:
+        "204":
+          description: Броня удалена
+        "404":
+          description: Броня не найдена
 
   /api/auth/register:
     post:
@@ -457,6 +552,11 @@ components:
         photo:
           type: string
           example: "https://example.com/aragorn.jpg"
+        armor_id:
+          type: integer
+          nullable: true
+          example: 1
+          description: ID выбранной брони (опционально)
     CreateGameRequest:
       type: object
       required:
@@ -607,6 +707,11 @@ components:
         photo:
           type: string
           example: "https://example.com/aragorn.jpg"
+        armor_id:
+          type: integer
+          nullable: true
+          example: 1
+          description: ID выбранной брони (опционально)
 
     CharacterUpdate:
       type: object
@@ -707,6 +812,10 @@ components:
           type: string
         photo:
           type: string
+        armor_id:
+          type: integer
+          nullable: true
+          description: ID выбранной брони (опционально)
 
     CharacterShort:
       type: object
@@ -906,4 +1015,133 @@ components:
         error:
           type: string
           example: "description of the error"
+
+    Armor:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Кожаный доспех"
+        type:
+          type: string
+          example: "лёгкий доспех"
+        armor_class:
+          type: integer
+          example: 11
+        modifier:
+          type: string
+          example: "Ловк."
+        cost:
+          type: string
+          example: "30 золотых"
+        rarity:
+          type: string
+          example: "Обычная"
+        stealth_disadvantage:
+          type: string
+          example: "Нет"
+        strength_requirement:
+          type: string
+          example: "Нет"
+        weight:
+          type: string
+          example: "3"
+        unique_stats:
+          type: string
+          example: "Нет"
+        charges:
+          type: string
+          example: "Нет"
+        modifiers:
+          type: string
+          example: ""
+
+    ArmorCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Кожаный доспех"
+        type:
+          type: string
+          example: "лёгкий доспех"
+        armor_class:
+          type: integer
+          example: 11
+        modifier:
+          type: string
+          example: "Ловк."
+        cost:
+          type: string
+          example: "30 золотых"
+        rarity:
+          type: string
+          example: "Обычная"
+        stealth_disadvantage:
+          type: string
+          example: "Нет"
+        strength_requirement:
+          type: string
+          example: "Нет"
+        weight:
+          type: string
+          example: "3"
+        unique_stats:
+          type: string
+          example: "Нет"
+        charges:
+          type: string
+          example: "Нет"
+        modifiers:
+          type: string
+          example: ""
+
+    ArmorUpdate:
+      type: object
+      description: Поля, которые можно обновить
+      properties:
+        name:
+          type: string
+          example: "Кожаный доспех"
+        type:
+          type: string
+          example: "лёгкий доспех"
+        armor_class:
+          type: integer
+          example: 11
+        modifier:
+          type: string
+          example: "Ловк."
+        cost:
+          type: string
+          example: "30 золотых"
+        rarity:
+          type: string
+          example: "Обычная"
+        stealth_disadvantage:
+          type: string
+          example: "Нет"
+        strength_requirement:
+          type: string
+          example: "Нет"
+        weight:
+          type: string
+          example: "3"
+        unique_stats:
+          type: string
+          example: "Нет"
+        charges:
+          type: string
+          example: "Нет"
+        modifiers:
+          type: string
+          example: ""
 

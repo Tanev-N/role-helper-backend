@@ -119,3 +119,23 @@ CREATE TABLE session_players (
     character_id INTEGER NOT NULL REFERENCES characters(id),
     UNIQUE(session_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS armor (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    type VARCHAR(100),
+    armor_class INTEGER,
+    modifier VARCHAR(50),
+    cost VARCHAR(100),
+    rarity VARCHAR(50),
+    stealth_disadvantage VARCHAR(10),
+    strength_requirement VARCHAR(50),
+    weight VARCHAR(50),
+    unique_stats TEXT,
+    charges VARCHAR(50),
+    modifiers TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE characters ADD COLUMN IF NOT EXISTS armor_id INTEGER REFERENCES armor(id) ON DELETE SET NULL;
