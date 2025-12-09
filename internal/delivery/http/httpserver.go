@@ -108,7 +108,8 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
                             return response;
                         },
                         validatorUrl: null,
-                        tryItOutEnabled: true
+                        tryItOutEnabled: true,
+                        withCredentials: true
                     });
                 }
             </script>
