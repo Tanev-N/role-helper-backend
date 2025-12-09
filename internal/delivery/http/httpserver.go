@@ -58,7 +58,7 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 		http.ServeFile(w, r, "role-helper-api.yaml")
 	})
 
-	router.HandleFunc("/docs/", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/docs", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
 		w.Write([]byte(`
         <!DOCTYPE html>
@@ -78,7 +78,7 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
             <script>
                 window.onload = function() {
                     window.ui = SwaggerUIBundle({
-                        url: '/openapi.yaml',
+                        url: 'http://critical-roll.ru:8080/openapi.yaml',
                         dom_id: '#swagger-ui',
                         presets: [
                             SwaggerUIBundle.presets.apis,
