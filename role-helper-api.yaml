@@ -494,7 +494,26 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GamePlayer"
-
+  /api/games/sessions/{session_id}/players:
+    get:
+      tags: [ games ]
+      summary: Получение игроков сессии
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Список игроков сессии
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GamePlayer"
 components:
   schemas:
     Character:
