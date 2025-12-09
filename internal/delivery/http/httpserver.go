@@ -95,19 +95,19 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
         </html>`))
 	})
 
-	router = router.PathPrefix("/api").Subrouter()
+	api := router.PathPrefix("/api").Subrouter()
 
-	router.Use(middleware.CORS)
-	router.Use(middleware.Auth(uu))
+	api.Use(middleware.CORS)
+	api.Use(middleware.Auth(uu))
 
 	characterRout := character.NewCharacterRouter(cu)
-	characterRout.SetupCharacterRoutes(router)
+	characterRout.SetupCharacterRoutes(api)
 
 	gameRout := games.NewGameRouter(gu)
-	gameRout.SetupRoutes(router)
+	gameRout.SetupRoutes(api)
 
 	userRout := user.NewUserRouter(uu)
-	userRout.SetupRoutes(router)
+	userRout.SetupRoutes(api)
 
 	return router
 }
