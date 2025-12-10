@@ -461,6 +461,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateSessionResponse"
+  /api/games/{game_id}/previous_sessions:
     get:
       tags: [ games ]
       summary: Получение предыдущих (завершенных) сессий игры
