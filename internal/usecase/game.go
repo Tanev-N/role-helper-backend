@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"fmt"
 	"role-helper/internal/models"
 	"role-helper/internal/repository"
 )
@@ -115,4 +116,44 @@ func (uc *GameUseCase) GetGamePlayers(gameID string) ([]models.SessionPlayer, er
 		return nil, err
 	}
 	return players, nil
+}
+
+func (uc *GameUseCase) GetPreviousSessions(gameID string, userID int) ([]models.Session, error) {
+	if gameID == "" {
+		return nil, errors.New("empty game id")
+	}
+
+	game, err := uc.game.GetGameByID(gameID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get game: %w", err)
+	}
+	if game == nil {
+		return nil, errors.New("game not found")
+	}
+
+	if game.MasterID != userID {
+		players, err := uc.game.GetGamePlayers(gameID)
+		if err != nil {
+			return nil, fmt.Errorf("failed to check game players: %w", err)
+		}
+
+		isPlayer := false
+		for _, player := range players {
+			if player.UserID == userID {
+				isPlayer = true
+				break
+			}
+		}
+
+		if !isPlayer {
+			return nil, errors.New("access denied: user is not master or player in this game")
+		}
+	}
+
+	sessions, err := uc.game.GetPreviousSessions(gameID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get previous sessions: %w", err)
+	}
+
+	return sessions, nil
 }

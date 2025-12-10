@@ -62,4 +62,5 @@ type GameService interface {
 	GetSessionPlayers(sessionID string) ([]SessionPlayer, error)
 	// Старый метод для обратной совместимости
 	GetGamePlayers(gameID string) ([]SessionPlayer, error)
+	GetPreviousSessions(gameID string, userID int) ([]Session, error)
 }

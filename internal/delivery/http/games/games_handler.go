@@ -252,3 +252,41 @@ func (gr *GameRouter) GetGamePlayers(w http.ResponseWriter, r *http.Request) {
 
 	writeSuccessResponse(w, http.StatusOK, players)
 }
+
+func (gr *GameRouter) GetPreviousSessions(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
+
+	vars := mux.Vars(r)
+	gameID := vars["game_id"]
+	if gameID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty game_id"), "Некорректный идентификатор игры")
+		return
+	}
+
+	sessions, err := gr.GameUsecase.GetPreviousSessions(gameID, user.ID)
+	if err != nil {
+		status := http.StatusInternalServerError
+		message := "Не удалось получить предыдущие сессии"
+
+		switch {
+		case strings.Contains(err.Error(), "game not found"):
+			status = http.StatusNotFound
+			message = "Игра не найдена"
+		case strings.Contains(err.Error(), "empty game id"):
+			status = http.StatusBadRequest
+			message = "Некорректный идентификатор игры"
+		case strings.Contains(err.Error(), "access denied"):
+			status = http.StatusForbidden
+			message = "Нет доступа к предыдущим сессиям"
+		}
+
+		writeErrorResponse(w, status, err, message)
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, sessions)
+}

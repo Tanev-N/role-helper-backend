@@ -461,7 +461,58 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CreateSessionResponse"
+    get:
+      tags: [ games ]
+      summary: Получение предыдущих (завершенных) сессий игры
+      description: |
+        Возвращает список завершенных сессий для указанной игры.
 
+        ### Права доступа:
+        - Мастер игры
+        - Игроки, участвующие в игре
+
+        Сессии отсортированы по дате создания в порядке убывания.
+      parameters:
+        - name: game_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID игры
+      responses:
+        "200":
+          description: Список завершенных сессий
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        "400":
+          description: Некорректный запрос
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Нет доступа к игре
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Игра не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /api/games/sessions/enter:
     post:
       tags: [games]
@@ -547,6 +598,7 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GamePlayer"
+
 components:
   securitySchemes:
     cookieAuth:
