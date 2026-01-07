@@ -22,7 +22,9 @@ func (gr *GameRouter) SetupRoutes(router *mux.Router) {
 	gamesRouter.HandleFunc("/{game_id}/sessions", gr.CreateSession).Methods("POST", "OPTIONS")
 	gamesRouter.HandleFunc("/sessions/enter", gr.EnterSession).Methods("POST", "OPTIONS")
 	gamesRouter.HandleFunc("/sessions/{session_id}/finish", gr.FinishSession).Methods("POST", "OPTIONS")
+	gamesRouter.HandleFunc("/sessions/{session_id}/leave", gr.LeaveSession).Methods("POST", "OPTIONS")
 	gamesRouter.HandleFunc("/{game_id}/players", gr.GetGamePlayers).Methods("GET")
 	gamesRouter.HandleFunc("/sessions/{session_id}/players", gr.GetSessionPlayers).Methods("GET")
+	gamesRouter.HandleFunc("/previous_sessions/{session_id}/players", gr.GetPreviousSessionPlayers).Methods("GET")
 	gamesRouter.HandleFunc("/{game_id}/previous_sessions", gr.GetPreviousSessions).Methods("GET")
 }

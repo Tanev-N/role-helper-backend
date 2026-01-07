@@ -558,6 +558,45 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
+  /api/games/sessions/{session_id}/leave:
+    post:
+      tags: [games]
+      summary: Выход пользователя из сессии
+      description: Удаляет текущего пользователя из списка игроков указанной сессии.
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID сессии
+      responses:
+        "200":
+          description: Пользователь вышел из сессии
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "400":
+          description: Некорректный запрос или пользователь не состоит в сессии
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /api/games/{game_id}/players:
     get:
       tags: [games]
@@ -582,7 +621,13 @@ paths:
   /api/games/sessions/{session_id}/players:
     get:
       tags: [ games ]
-      summary: Получение игроков сессии
+      summary: Получение игроков активной сессии
+      description: |
+        Возвращает текущий состав игроков активной сессии.
+
+        - Возвращаются только **активные** игроки (is_active = true)
+        - Если сессия уже завершена, будет ошибка 400
+        - Игроки, которые вышли из сессии (через ручку выхода), в ответе **не присутствуют**
       parameters:
         - name: session_id
           in: path
@@ -592,13 +637,76 @@ paths:
             format: uuid
       responses:
         "200":
-          description: Список игроков сессии
+          description: Список игроков активной сессии
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: "#/components/schemas/GamePlayer"
+        "400":
+          description: Некорректный запрос или сессия уже завершена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/games/previous_sessions/{session_id}/players:
+    get:
+      tags: [ games ]
+      summary: Получение игроков завершенной сессии
+      description: |
+        Возвращает полный список игроков и их персонажей для **завершенной** сессии.
+
+        - Возвращаются **все** игроки, которые когда-либо участвовали в сессии
+        - Включает игроков, которые вышли из сессии до её завершения
+        - Для незавершенной сессии будет ошибка 400
+      parameters:
+        - name: session_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Список игроков завершенной сессии
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GamePlayer"
+        "400":
+          description: Некорректный запрос или сессия еще не завершена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Не авторизован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Сессия не найдена
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
   securitySchemes:

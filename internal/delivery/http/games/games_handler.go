@@ -33,6 +33,45 @@ type finishSessionRequest struct {
 	Summary string `json:"summary"`
 }
 
+func (gr *GameRouter) LeaveSession(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
+
+	vars := mux.Vars(r)
+	sessionID := vars["session_id"]
+	if sessionID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty session_id"), "Некорректный идентификатор сессии")
+		return
+	}
+
+	if err := gr.GameUsecase.LeaveSession(sessionID, user.ID); err != nil {
+		status := http.StatusInternalServerError
+		message := "Не удалось выйти из сессии"
+
+		switch {
+		case strings.Contains(err.Error(), "invalid session"):
+			status = http.StatusNotFound
+			message = "Сессия не найдена"
+		case strings.Contains(err.Error(), "empty session id"):
+			status = http.StatusBadRequest
+			message = "Некорректный идентификатор сессии"
+		case strings.Contains(err.Error(), "player not in session"):
+			status = http.StatusBadRequest
+			message = "Пользователь не состоит в сессии"
+		}
+
+		writeErrorResponse(w, status, err, message)
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, map[string]string{
+		"message": "Пользователь вышел из сессии",
+	})
+}
+
 func (gr *GameRouter) CreateGame(w http.ResponseWriter, r *http.Request) {
 	user := middleware.GetUserFromContext(r)
 	if user == nil {
@@ -221,9 +260,62 @@ func (gr *GameRouter) GetSessionPlayers(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	players, err := gr.GameUsecase.GetSessionPlayers(sessionID)
+	players, err := gr.GameUsecase.GetActiveSessionPlayers(sessionID)
 	if err != nil {
-		writeErrorResponse(w, http.StatusInternalServerError, err, "Не удалось получить игроков сессии")
+		status := http.StatusInternalServerError
+		message := "Не удалось получить игроков активной сессии"
+
+		switch {
+		case strings.Contains(err.Error(), "invalid session"):
+			status = http.StatusNotFound
+			message = "Сессия не найдена"
+		case strings.Contains(err.Error(), "empty session id"):
+			status = http.StatusBadRequest
+			message = "Некорректный идентификатор сессии"
+		case strings.Contains(err.Error(), "session is already finished"):
+			status = http.StatusBadRequest
+			message = "Сессия уже завершена"
+		}
+
+		writeErrorResponse(w, status, err, message)
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, players)
+}
+
+func (gr *GameRouter) GetPreviousSessionPlayers(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, errors.New("unauthorized"), "Необходима авторизация")
+		return
+	}
+
+	vars := mux.Vars(r)
+	sessionID := vars["session_id"]
+	if sessionID == "" {
+		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty session_id"), "Некорректный идентификатор сессии")
+		return
+	}
+
+	players, err := gr.GameUsecase.GetFinishedSessionPlayers(sessionID)
+	if err != nil {
+		status := http.StatusInternalServerError
+		message := "Не удалось получить игроков завершенной сессии"
+
+		switch {
+		case strings.Contains(err.Error(), "invalid session"):
+			status = http.StatusNotFound
+			message = "Сессия не найдена"
+		case strings.Contains(err.Error(), "empty session id"):
+			status = http.StatusBadRequest
+			message = "Некорректный идентификатор сессии"
+		case strings.Contains(err.Error(), "session is not finished"):
+			status = http.StatusBadRequest
+			message = "Сессия еще не завершена"
+		}
+
+		writeErrorResponse(w, status, err, message)
 		return
 	}
 

@@ -44,11 +44,13 @@ type GameRepository interface {
 	GetSessionByKey(sessionKey string) (*Session, error)
 	GetPreviousSessions(gameID string) ([]Session, error)
 	AddPlayerToSession(player *SessionPlayer) error
+	RemovePlayerFromSession(sessionID string, userID int) error
 	FinishSession(id string, summary string) error
 	GetGameByID(gameID string) (*Game, error)
 	GetSessionByID(sessionID string) (*Session, error)
 	GetAllGames(userID int) ([]Game, error)
 	GetSessionPlayers(sessionID string) ([]SessionPlayer, error)
+	GetAllSessionPlayers(sessionID string) ([]SessionPlayer, error)
 	GetGamePlayers(gameID string) ([]SessionPlayer, error)
 }
 
@@ -56,11 +58,11 @@ type GameService interface {
 	CreateGame(game *Game) (*Game, error)
 	CreateSession(session *Session) (*Session, []Session, error)
 	EnterSession(key string, player *SessionPlayer) (*Session, error)
+	LeaveSession(sessionID string, userID int) error
 	FinishSession(id string, summary string) error
 	GetAllGames(userID int) ([]Game, error)
-	// Новый метод
-	GetSessionPlayers(sessionID string) ([]SessionPlayer, error)
-	// Старый метод для обратной совместимости
+	GetActiveSessionPlayers(sessionID string) ([]SessionPlayer, error)
+	GetFinishedSessionPlayers(sessionID string) ([]SessionPlayer, error)
 	GetGamePlayers(gameID string) ([]SessionPlayer, error)
 	GetPreviousSessions(gameID string, userID int) ([]Session, error)
 }

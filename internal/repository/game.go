@@ -108,28 +108,37 @@ func (r *GameRepository) GetPreviousSessions(gameID string) ([]models.Session, e
 }
 
 func (r *GameRepository) AddPlayerToSession(player *models.SessionPlayer) error {
-	checkQuery := `SELECT id FROM session_players WHERE session_id = $1 AND user_id = $2`
+	checkQuery := `SELECT id, is_active FROM session_players WHERE session_id = $1 AND user_id = $2`
 	var existingID int
-	err := r.db.QueryRow(checkQuery, player.SessionID, player.UserID).Scan(&existingID)
-	if err == nil {
+	var isActive bool
+	err := r.db.QueryRow(checkQuery, player.SessionID, player.UserID).Scan(&existingID, &isActive)
+	switch {
+	case err == nil:
+		updateQuery := `
+			UPDATE session_players
+			SET is_active = TRUE,
+			    left_at = NULL,
+			    character_id = $3
+			WHERE id = $1 AND session_id = $2
+		`
+		if _, err := r.db.Exec(updateQuery, existingID, player.SessionID, player.CharacterID); err != nil {
+			return fmt.Errorf("failed to reactivate player in session: %w", err)
+		}
 		player.ID = existingID
 		return nil
-	}
-	if err != sql.ErrNoRows {
+	case err != sql.ErrNoRows:
 		return fmt.Errorf("failed to check player in session: %w", err)
+	default:
+		query := `
+			INSERT INTO session_players (session_id, user_id, character_id, is_active) 
+			VALUES ($1, $2, $3, TRUE)
+			RETURNING id
+		`
+		if err := r.db.QueryRow(query, player.SessionID, player.UserID, player.CharacterID).Scan(&player.ID); err != nil {
+			return fmt.Errorf("failed to add player to session: %w", err)
+		}
+		return nil
 	}
-
-	query := `
-        INSERT INTO session_players (session_id, user_id, character_id) 
-        VALUES ($1, $2, $3)
-        RETURNING id
-    `
-
-	err = r.db.QueryRow(query, player.SessionID, player.UserID, player.CharacterID).Scan(&player.ID)
-	if err != nil {
-		return fmt.Errorf("failed to add player to session: %w", err)
-	}
-	return nil
 }
 
 func (r *GameRepository) FinishSession(id string, summary string) error {
@@ -243,7 +252,7 @@ func (r *GameRepository) GetSessionPlayers(sessionID string) ([]models.SessionPl
 	query := `
 		SELECT id, session_id, user_id, character_id
 		FROM session_players 
-		WHERE session_id = $1
+		WHERE session_id = $1 AND (is_active = TRUE OR is_active IS NULL)
 	`
 
 	rows, err := r.db.Query(query, sessionID)
@@ -269,6 +278,41 @@ func (r *GameRepository) GetSessionPlayers(sessionID string) ([]models.SessionPl
 
 	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating session players: %w", err)
+	}
+
+	return players, nil
+}
+
+func (r *GameRepository) GetAllSessionPlayers(sessionID string) ([]models.SessionPlayer, error) {
+	query := `
+		SELECT id, session_id, user_id, character_id
+		FROM session_players 
+		WHERE session_id = $1
+	`
+
+	rows, err := r.db.Query(query, sessionID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query all session players: %w", err)
+	}
+	defer rows.Close()
+
+	var players []models.SessionPlayer
+	for rows.Next() {
+		var player models.SessionPlayer
+		err := rows.Scan(
+			&player.ID,
+			&player.SessionID,
+			&player.UserID,
+			&player.CharacterID,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan all session player: %w", err)
+		}
+		players = append(players, player)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating all session players: %w", err)
 	}
 
 	return players, nil
@@ -308,4 +352,29 @@ func (r *GameRepository) GetGamePlayers(gameID string) ([]models.SessionPlayer, 
 	}
 
 	return players, nil
+}
+
+func (r *GameRepository) RemovePlayerFromSession(sessionID string, userID int) error {
+	query := `
+		UPDATE session_players 
+		SET is_active = FALSE,
+		    left_at = NOW()
+		WHERE session_id = $1 AND user_id = $2
+	`
+
+	result, err := r.db.Exec(query, sessionID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to remove player from session: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
 }

@@ -118,8 +118,13 @@ CREATE TABLE session_players (
     session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     character_id INTEGER NOT NULL REFERENCES characters(id),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    left_at TIMESTAMPTZ,
     UNIQUE(session_id, user_id)
 );
+
+ALTER TABLE session_players ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE session_players ADD COLUMN IF NOT EXISTS left_at TIMESTAMPTZ;
 
 CREATE TABLE IF NOT EXISTS armor (
     id SERIAL PRIMARY KEY,

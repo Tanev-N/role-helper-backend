@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"role-helper/internal/models"
@@ -82,6 +83,29 @@ func (uc *GameUseCase) EnterSession(key string, player *models.SessionPlayer) (*
 	return session, nil
 }
 
+func (uc *GameUseCase) LeaveSession(sessionID string, userID int) error {
+	if sessionID == "" {
+		return errors.New("empty session id")
+	}
+
+	session, err := uc.game.GetSessionByID(sessionID)
+	if err != nil {
+		return err
+	}
+	if session == nil {
+		return errors.New("invalid session")
+	}
+
+	if err := uc.game.RemovePlayerFromSession(sessionID, userID); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return errors.New("player not in session")
+		}
+		return err
+	}
+
+	return nil
+}
+
 func (uc *GameUseCase) FinishSession(id string, summary string) error {
 	session, err := uc.game.GetSessionByID(id)
 	if err != nil {
@@ -102,8 +126,46 @@ func (uc *GameUseCase) GetAllGames(userID int) ([]models.Game, error) {
 	return games, nil
 }
 
-func (uc *GameUseCase) GetSessionPlayers(sessionID string) ([]models.SessionPlayer, error) {
+func (uc *GameUseCase) GetActiveSessionPlayers(sessionID string) ([]models.SessionPlayer, error) {
+	if sessionID == "" {
+		return nil, errors.New("empty session id")
+	}
+
+	session, err := uc.game.GetSessionByID(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	if session == nil {
+		return nil, errors.New("invalid session")
+	}
+	if session.FinishedAt != nil {
+		return nil, errors.New("session is already finished")
+	}
+
 	players, err := uc.game.GetSessionPlayers(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	return players, nil
+}
+
+func (uc *GameUseCase) GetFinishedSessionPlayers(sessionID string) ([]models.SessionPlayer, error) {
+	if sessionID == "" {
+		return nil, errors.New("empty session id")
+	}
+
+	session, err := uc.game.GetSessionByID(sessionID)
+	if err != nil {
+		return nil, err
+	}
+	if session == nil {
+		return nil, errors.New("invalid session")
+	}
+	if session.FinishedAt == nil {
+		return nil, errors.New("session is not finished")
+	}
+
+	players, err := uc.game.GetAllSessionPlayers(sessionID)
 	if err != nil {
 		return nil, err
 	}
