@@ -169,10 +169,6 @@ func (uc *GameUseCase) GetFinishedSessionPlayers(sessionID string) ([]models.Ses
 	if err != nil {
 		return nil, err
 	}
-	// Гарантируем, что возвращаем пустой слайс вместо nil
-	if players == nil {
-		players = []models.SessionPlayer{}
-	}
 	return players, nil
 }
 

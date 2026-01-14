@@ -315,11 +315,6 @@ func (r *GameRepository) GetAllSessionPlayers(sessionID string) ([]models.Sessio
 		return nil, fmt.Errorf("error iterating all session players: %w", err)
 	}
 
-	// Возвращаем пустой слайс вместо nil для корректной сериализации JSON
-	if players == nil {
-		players = []models.SessionPlayer{}
-	}
-
 	return players, nil
 }
 
