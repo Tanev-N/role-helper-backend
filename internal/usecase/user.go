@@ -38,7 +38,7 @@ func NewUserUsecase(userRepo models.UserRepository, redisClient *redis.Client) *
 }
 
 const (
-	imageBaseURL = "https://critical-roll.ru/images"
+	imageBaseURL = "https://critical-roll.ru/api/images"
 	uploadDir    = "/var/www/app/images"
 	maxFileSize  = 10 << 20 // 10 МБ
 )

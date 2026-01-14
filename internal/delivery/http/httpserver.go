@@ -62,9 +62,6 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 
 	router := mux.NewRouter()
 
-	imagesHandler := http.StripPrefix("/images/", http.FileServer(http.Dir("/var/www/app/images")))
-	router.PathPrefix("/images/").Handler(middleware.CORS(imagesHandler)).Methods("GET", "OPTIONS")
-
 	openapiHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/x-yaml")
 		http.ServeFile(w, r, "role-helper-api.yaml")
@@ -124,6 +121,10 @@ func (s *HTTPServer) setupRoutes(db *sql.DB, client *redis.Client) *mux.Router {
 	api := router.PathPrefix("/api").Subrouter()
 
 	api.Use(middleware.CORS)
+
+	imagesHandler := http.StripPrefix("/api/images/", http.FileServer(http.Dir("/var/www/app/images")))
+	api.PathPrefix("/images/").Handler(imagesHandler).Methods("GET", "OPTIONS")
+
 	api.Use(middleware.Auth(uu))
 
 	characterRout := character.NewCharacterRouter(cu)
