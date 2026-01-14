@@ -7,6 +7,7 @@ import (
 	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -127,4 +128,58 @@ func (cr *CharacterRouter) DeleteCharacter(w http.ResponseWriter, r *http.Reques
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (cr *CharacterRouter) UploadPhoto(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, nil, "Требуется авторизация")
+		return
+	}
+
+	vars := mux.Vars(r)
+	characterID, _ := strconv.Atoi(vars["id"])
+
+	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+		writeErrorResponse(w, http.StatusBadRequest, nil, "Ожидается multipart/form-data")
+		return
+	}
+
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, err, "Ошибка разбора формы")
+		return
+	}
+
+	file, handler, err := r.FormFile("photo")
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, err, "Файл 'photo' не найден")
+		return
+	}
+	defer file.Close()
+
+	photoURL, err := cr.CharacterUsecase.UploadPhoto(characterID, user.ID, file, handler.Filename)
+	if err != nil {
+		status := http.StatusInternalServerError
+		msg := "Ошибка загрузки фото"
+
+		if strings.Contains(err.Error(), "недопустимый формат") {
+			status = http.StatusBadRequest
+			msg = "Поддерживаются только JPG, PNG"
+		} else if strings.Contains(err.Error(), "превышает допустимый размер") {
+			status = http.StatusBadRequest
+			msg = "Размер файла не должен превышать 10 МБ"
+		} else if strings.Contains(err.Error(), "не принадлежит") {
+			status = http.StatusForbidden
+			msg = "Персонаж не принадлежит пользователю"
+		} else if err == models.ErrCharacterNotFound {
+			status = http.StatusNotFound
+			msg = "Персонаж не найден"
+		}
+
+		writeErrorResponse(w, status, err, msg)
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, map[string]string{"photo_url": photoURL})
 }

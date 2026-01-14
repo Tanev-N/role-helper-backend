@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"mime/multipart"
 )
 
 type Character struct {
@@ -107,14 +108,16 @@ type CharacterRepository interface {
 	Delete(id int) error                                  // Удаление персонажа
 	CheckBelonging(id, userID int) (bool, error)
 	CheckCharacterInSameGame(characterID, userID int) (bool, error) // Проверка участия в одной игре
+	UpdatePhoto(characterID int, photoURL string) error             // Обновление фото персонажа
 }
 
 type CharacterService interface {
-	Create(create *Character) (*Character, error)                 // Создание нового персонажа с валидацией
-	GetAll(userID int) ([]CharacterShort, error)                  // Получение списка всех персонажей
-	FindByID(id, userID int) (*Character, error)                  // Поиск персонажа по ID
-	Update(id, userID int, update *Character) (*Character, error) // Обновление персонажа с валидацией
-	Delete(id, userID int) error                                  // Удаление персонажа
+	Create(create *Character) (*Character, error)                                                      // Создание нового персонажа с валидацией
+	GetAll(userID int) ([]CharacterShort, error)                                                       // Получение списка всех персонажей
+	FindByID(id, userID int) (*Character, error)                                                       // Поиск персонажа по ID
+	Update(id, userID int, update *Character) (*Character, error)                                      // Обновление персонажа с валидацией
+	Delete(id, userID int) error                                                                       // Удаление персонажа
+	UploadPhoto(characterID, userID int, file multipart.File, originalFilename string) (string, error) // Загрузка фото персонажа
 }
 
 var (

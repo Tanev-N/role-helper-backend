@@ -1,8 +1,14 @@
 package usecase
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"role-helper/internal/models"
 	"role-helper/internal/utils"
 	"role-helper/internal/validator"
@@ -245,4 +251,71 @@ func (c *CharacterUsecase) Delete(id, userID int) error {
 		return models.ErrCharacterNotFound
 	}
 	return c.repo.Delete(id)
+}
+
+func (c *CharacterUsecase) UploadPhoto(characterID, userID int, file multipart.File, originalFilename string) (string, error) {
+	ok, err := c.repo.CheckBelonging(characterID, userID)
+	if err != nil {
+		return "", fmt.Errorf("ошибка проверки принадлежности: %w", err)
+	}
+	if !ok {
+		return "", errors.New("персонаж не принадлежит пользователю")
+	}
+
+	character, err := c.repo.FindByID(characterID)
+	if err != nil {
+		return "", fmt.Errorf("персонаж не найден: %w", err)
+	}
+	if character == nil {
+		return "", models.ErrCharacterNotFound
+	}
+
+	const (
+		imageBaseURL = "https://critical-roll.ru/api/images"
+		uploadDir    = "/var/www/app/images"
+		maxFileSize  = 10 << 20 // 10 МБ
+	)
+
+	ext := strings.ToLower(filepath.Ext(originalFilename))
+	validExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	if !validExts[ext] {
+		return "", fmt.Errorf("недопустимый формат изображения")
+	}
+
+	randomBytes := make([]byte, 16)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", fmt.Errorf("ошибка генерации имени файла: %w", err)
+	}
+	filename := hex.EncodeToString(randomBytes) + ext
+	filePath := filepath.Join(uploadDir, filename)
+
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		return "", fmt.Errorf("не удалось создать директорию: %w", err)
+	}
+
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return "", fmt.Errorf("ошибка создания файла: %w", err)
+	}
+	defer dst.Close()
+
+	limitReader := io.LimitReader(file, maxFileSize+1)
+	written, err := io.Copy(dst, limitReader)
+	if err != nil {
+		os.Remove(filePath)
+		return "", fmt.Errorf("ошибка записи файла: %w", err)
+	}
+	if written > maxFileSize {
+		os.Remove(filePath)
+		return "", fmt.Errorf("файл превышает допустимый размер (макс. 10 МБ)")
+	}
+
+	photoURL := imageBaseURL + "/" + filename
+
+	if err := c.repo.UpdatePhoto(character.ID, photoURL); err != nil {
+		os.Remove(filePath)
+		return "", fmt.Errorf("ошибка обновления фото в БД: %w", err)
+	}
+
+	return photoURL, nil
 }

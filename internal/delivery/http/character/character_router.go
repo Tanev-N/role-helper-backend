@@ -22,4 +22,5 @@ func (cr *CharacterRouter) SetupCharacterRoutes(mux *mux.Router) {
 	charactersRouter.HandleFunc("/{id}", cr.GetCharacter).Methods("GET")
 	charactersRouter.HandleFunc("/{id}", cr.UpdateCharacter).Methods("PUT", "OPTIONS")
 	charactersRouter.HandleFunc("/{id}", cr.DeleteCharacter).Methods("DELETE", "OPTIONS")
+	charactersRouter.HandleFunc("/{id}/photo", cr.UploadPhoto).Methods("POST", "OPTIONS")
 }

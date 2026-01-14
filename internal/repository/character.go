@@ -506,3 +506,9 @@ func (cr *CharacterRepository) CheckCharacterInSameGame(characterID, userID int)
 	}
 	return exists, nil
 }
+
+func (cr *CharacterRepository) UpdatePhoto(characterID int, photoURL string) error {
+	query := `UPDATE characters SET photo = $1 WHERE id = $2`
+	_, err := cr.db.Exec(query, photoURL, characterID)
+	return err
+}
