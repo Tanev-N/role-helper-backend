@@ -181,5 +181,14 @@ func (cr *CharacterRouter) UploadPhoto(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeSuccessResponse(w, http.StatusOK, map[string]string{"photo_url": photoURL})
+	updatedCharacter, err := cr.CharacterUsecase.FindByID(characterID, user.ID)
+	if err != nil {
+		writeSuccessResponse(w, http.StatusOK, map[string]string{"photo_url": photoURL})
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, map[string]interface{}{
+		"photo_url": photoURL,
+		"character": updatedCharacter,
+	})
 }

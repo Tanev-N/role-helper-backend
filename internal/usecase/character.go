@@ -31,6 +31,11 @@ func (c *CharacterUsecase) Create(createReq *models.Character) (*models.Characte
 		utils.AutoCalculateCharacterStats(createReq)
 	}
 
+	// Если фото равно дефолтному значению, очищаем его
+	if createReq.Photo == "/app/images/characters_default.png" || createReq.Photo == "characters_default.png" {
+		createReq.Photo = ""
+	}
+
 	if err := validator.ValidateCharacter(*createReq); err != nil {
 		return nil, err
 	}
@@ -211,7 +216,12 @@ func (c *CharacterUsecase) Update(id int, userID int, update *models.Character) 
 		character.Features = update.Features
 	}
 	if update.Photo != "" {
-		character.Photo = update.Photo
+		// Если фото равно дефолтному значению, очищаем его
+		if update.Photo == "/app/images/characters_default.png" || update.Photo == "characters_default.png" {
+			character.Photo = ""
+		} else {
+			character.Photo = update.Photo
+		}
 	}
 	if update.Skills != nil {
 		character.Skills = update.Skills
