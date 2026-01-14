@@ -16,6 +16,11 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
+func (ur *UserRepository) UpdateAvatar(userID int, avatarURL string) error {
+	_, err := ur.db.Exec(`UPDATE users SET avatar_url = $1 WHERE id = $2`, avatarURL, userID)
+	return err
+}
+
 func (ur *UserRepository) Create(user *models.User) (*models.User, error) {
 	query := `
 		INSERT INTO users (username, password_hash, avatar_url)

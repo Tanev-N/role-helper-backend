@@ -10,4 +10,5 @@ func (ur *UserRouter) SetupRoutes(router *mux.Router) {
 	userRouter.HandleFunc("/register", ur.Register).Methods("POST", "OPTIONS")
 	userRouter.HandleFunc("/login", ur.Login).Methods("POST", "OPTIONS")
 	userRouter.HandleFunc("/logout", ur.Logout).Methods("POST", "OPTIONS")
+	userRouter.HandleFunc("/avatar", ur.UploadAvatar).Methods("POST")
 }

@@ -4,8 +4,14 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"role-helper/internal/models"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -29,6 +35,62 @@ func NewUserUsecase(userRepo models.UserRepository, redisClient *redis.Client) *
 		userRepo: userRepo,
 		redis:    redisClient,
 	}
+}
+
+const (
+	imageBaseURL = "https://critical-roll.ru/images"
+	uploadDir    = "/var/www/app/images"
+	maxFileSize  = 10 << 20 // 10 МБ
+)
+
+func (uu *UserUsecase) UploadAvatar(userID int, file multipart.File, originalFilename string) (string, error) {
+	user, err := uu.userRepo.FindByID(userID)
+	if err != nil {
+		return "", fmt.Errorf("пользователь не найден: %w", err)
+	}
+
+	ext := strings.ToLower(filepath.Ext(originalFilename))
+	validExts := map[string]bool{".jpg": true, ".jpeg": true, ".png": true}
+	if !validExts[ext] {
+		return "", fmt.Errorf("недопустимый формат изображения")
+	}
+
+	randomBytes := make([]byte, 16)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", fmt.Errorf("ошибка генерации имени файла: %w", err)
+	}
+	filename := hex.EncodeToString(randomBytes) + ext
+	filePath := filepath.Join(uploadDir, filename)
+
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		return "", fmt.Errorf("не удалось создать директорию: %w", err)
+	}
+
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return "", fmt.Errorf("ошибка создания файла: %w", err)
+	}
+	defer dst.Close()
+
+	limitReader := io.LimitReader(file, maxFileSize+1)
+	written, err := io.Copy(dst, limitReader)
+	if err != nil {
+		os.Remove(filePath)
+		return "", fmt.Errorf("ошибка записи файла: %w", err)
+	}
+	if written > maxFileSize {
+		os.Remove(filePath)
+		return "", fmt.Errorf("файл превышает допустимый размер (макс. 10 МБ)")
+	}
+
+	avatarURL := imageBaseURL + "/" + filename
+
+	if err := uu.userRepo.UpdateAvatar(user.ID, avatarURL); err != nil {
+		os.Remove(filePath)
+		return "", fmt.Errorf("ошибка обновления аватара в БД: %w", err)
+	}
+
+	return avatarURL, nil
 }
 
 func (uu *UserUsecase) Register(req *models.UserRegisterRequest) (*models.User, string, error) {

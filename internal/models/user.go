@@ -1,6 +1,9 @@
 package models
 
-import "errors"
+import (
+	"errors"
+	"mime/multipart"
+)
 
 type User struct {
 	ID           int    `json:"id"`
@@ -24,6 +27,7 @@ type UserRepository interface {
 	Create(user *User) (*User, error)
 	FindByUsername(username string) (*User, error)
 	FindByID(id int) (*User, error)
+	UpdateAvatar(userID int, avatarURL string) error
 }
 
 type UserService interface {
@@ -31,6 +35,7 @@ type UserService interface {
 	Login(req *UserLoginRequest) (*User, string, error)
 	Logout(token string) error
 	ValidateToken(token string) (*User, error)
+	UploadAvatar(userID int, file multipart.File, originalFilename string) (string, error)
 }
 
 var (

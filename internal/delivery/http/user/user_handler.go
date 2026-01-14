@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"role-helper/internal/delivery/middleware"
 	"role-helper/internal/models"
 	"role-helper/internal/usecase"
 	"role-helper/internal/validator"
+	"strings"
 	"time"
 )
 
@@ -127,4 +129,49 @@ func (ur *UserRouter) Logout(w http.ResponseWriter, r *http.Request) {
 	writeSuccessResponse(w, http.StatusOK, map[string]string{
 		"message": "Вы успешно вышли из системы",
 	})
+}
+
+func (ur *UserRouter) UploadAvatar(w http.ResponseWriter, r *http.Request) {
+	user := middleware.GetUserFromContext(r)
+	if user == nil {
+		writeErrorResponse(w, http.StatusUnauthorized, nil, "Требуется авторизация")
+		return
+	}
+
+	if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
+		writeErrorResponse(w, http.StatusBadRequest, nil, "Ожидается multipart/form-data")
+		return
+	}
+
+	err := r.ParseMultipartForm(32 << 20)
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, err, "Ошибка разбора формы")
+		return
+	}
+
+	file, handler, err := r.FormFile("avatar")
+	if err != nil {
+		writeErrorResponse(w, http.StatusBadRequest, err, "Файл 'avatar' не найден")
+		return
+	}
+	defer file.Close()
+
+	avatarURL, err := ur.UserUsecase.UploadAvatar(user.ID, file, handler.Filename)
+	if err != nil {
+		status := http.StatusInternalServerError
+		msg := "Ошибка загрузки аватара"
+
+		if strings.Contains(err.Error(), "недопустимый формат") {
+			status = http.StatusBadRequest
+			msg = "Поддерживаются только JPG, PNG"
+		} else if strings.Contains(err.Error(), "превышает допустимый размер") {
+			status = http.StatusBadRequest
+			msg = "Размер файла не должен превышать 10 МБ"
+		}
+
+		writeErrorResponse(w, status, err, msg)
+		return
+	}
+
+	writeSuccessResponse(w, http.StatusOK, map[string]string{"avatar_url": avatarURL})
 }
