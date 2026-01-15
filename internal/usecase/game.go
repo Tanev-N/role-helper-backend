@@ -146,6 +146,17 @@ func (uc *GameUseCase) GetActiveSessionPlayers(sessionID string) ([]models.Sessi
 	if err != nil {
 		return nil, err
 	}
+
+	for i := range players {
+		character, err := uc.character.FindByID(players[i].CharacterID)
+		if err != nil {
+			continue
+		}
+		if character != nil {
+			players[i].Character = character
+		}
+	}
+
 	return players, nil
 }
 
@@ -169,6 +180,19 @@ func (uc *GameUseCase) GetFinishedSessionPlayers(sessionID string) ([]models.Ses
 	if err != nil {
 		return nil, err
 	}
+
+	// Загружаем полную информацию о персонажах для каждого игрока
+	for i := range players {
+		character, err := uc.character.FindByID(players[i].CharacterID)
+		if err != nil {
+			// Если не удалось загрузить персонажа, пропускаем его (не ломаем весь ответ)
+			continue
+		}
+		if character != nil {
+			players[i].Character = character
+		}
+	}
+
 	return players, nil
 }
 
@@ -177,6 +201,17 @@ func (uc *GameUseCase) GetGamePlayers(gameID string) ([]models.SessionPlayer, er
 	if err != nil {
 		return nil, err
 	}
+
+	for i := range players {
+		character, err := uc.character.FindByID(players[i].CharacterID)
+		if err != nil {
+			continue
+		}
+		if character != nil {
+			players[i].Character = character
+		}
+	}
+
 	return players, nil
 }
 
