@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -20,7 +21,7 @@ type createSessionResponse struct {
 
 type enterSessionRequest struct {
 	SessionKey  string `json:"session_key"`
-	CharacterID int    `json:"character_id"`
+	CharacterID any    `json:"character_id"`
 }
 
 type createGameRequest struct {
@@ -159,18 +160,37 @@ func (gr *GameRouter) EnterSession(w http.ResponseWriter, r *http.Request) {
 
 	req.SessionKey = strings.TrimSpace(req.SessionKey)
 
+	// character_id может прийти как число или как строка (например, с фронта)
+	characterID := 0
+	switch v := req.CharacterID.(type) {
+	case float64:
+		characterID = int(v)
+	case string:
+		s := strings.TrimSpace(v)
+		if s != "" {
+			if parsed, err := strconv.Atoi(s); err == nil {
+				characterID = parsed
+			}
+		}
+	case nil:
+		characterID = 0
+	default:
+		// неизвестный тип — оставим 0, ниже сработает валидация
+		characterID = 0
+	}
+
 	switch {
 	case req.SessionKey == "":
 		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty session key"), "Код сессии не может быть пустым")
 		return
-	case req.CharacterID == 0:
+	case characterID == 0:
 		writeErrorResponse(w, http.StatusBadRequest, errors.New("empty character id"), "Необходимо указать персонажа")
 		return
 	}
 
 	player := &models.SessionPlayer{
 		UserID:      user.ID,
-		CharacterID: req.CharacterID,
+		CharacterID: characterID,
 	}
 
 	session, err := gr.GameUsecase.EnterSession(req.SessionKey, player)
